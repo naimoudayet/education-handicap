@@ -33,14 +33,14 @@
 * [ ] gestion des professeurs
     * [ ] consulter
     * [ ] chercher
-    * [ ] ajouter
-    * [ ] modifier
-    * [ ] supprimer
+    * [ ] desactiver
 * [ ] gestion des etudiants
     * [ ] consulter
     * [ ] chercher
-    * [ ] ajouter
-    * [ ] modifier
+    * [ ] desactiver
+* [ ] gestion des cours
+    * [ ] consulter
+    * [ ] chercher
     * [ ] supprimer
 * [ ] gestion du profil
 

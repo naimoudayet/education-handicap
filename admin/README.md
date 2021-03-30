@@ -3,3 +3,6 @@
 
 # install Flask
 * pip install flask
+
+# install functools
+* pip install functools
