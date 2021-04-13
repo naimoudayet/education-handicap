@@ -30,44 +30,46 @@
     {% if professeurs %}
     {% for professeur in professeurs %}
     <div class="col-md-4">
-        <div class="card card-widget widget-user-2">
+        <!-- Widget: user widget style 1 -->
+        <div class="card card-widget widget-user">
             <!-- Add the bg color to the header using any of the bg-* classes -->
-            <div class="widget-user-header bg-warning">
+            <a href="/professeurs/details/{{ professeur['_id'] }}">
+                <div class="widget-user-header bg-info">
+                    <h3 class="widget-user-username">{{ professeur['nom'] }}
+                        {{ professeur['prenom'] }}</h3>
+                    <h5 class="widget-user-desc">{{ professeur['email'] }}</h5>
+                </div>
+            </a>
+
+            <a href="/professeurs/details/{{ professeur['_id'] }}">
                 <div class="widget-user-image">
                     <img class="img-circle elevation-2" src="/static/img/{{ professeur['photo'] }}" alt="User Avatar">
                 </div>
-                <!-- /.widget-user-image -->
-                <a href="/professeurs/details/{{ professeur['_id'] }}">
-                    <h3 class="widget-user-username">{{ professeur['nom'] }} {{ professeur['prenom'] }}</h3>
-                    <h5 class="widget-user-desc">{{ professeur['email'] }}</h5>
-                </a>
+            </a>
 
-            </div>
-            <div class="card-footer p-0">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            Projects <span class="float-right badge bg-primary">31</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            Tasks <span class="float-right badge bg-info">5</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            Completed Projects <span class="float-right badge bg-success">12</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            Followers <span class="float-right badge bg-danger">842</span>
-                        </a>
-                    </li>
-                </ul>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-sm-6 border-right">
+                        <div class="description-block">
+                            <h5 class="description-header">3,200</h5>
+                            <span class="description-text">Séances</span>
+                        </div>
+                        <!-- /.description-block -->
+                    </div>
+                    <!-- /.col -->
+                    <div class="col-sm-6">
+                        <div class="description-block">
+                            <h5 class="description-header">13,000</h5>
+                            <span class="description-text">Avis</span>
+                        </div>
+                        <!-- /.description-block -->
+                    </div>
+                    <!-- /.col -->
+                </div>
+                <!-- /.row -->
             </div>
         </div>
+        <!-- /.widget-user -->
     </div>
     {% endfor %}
     {% else %}

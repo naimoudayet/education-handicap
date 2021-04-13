@@ -99,6 +99,26 @@ def professeurs_index():
     return render_template('/professeurs/index.html', professeurs=professeurs)
 
 
+@app.route('/professeurs/recherche', methods=['GET'])
+@is_logged_in
+def professeurs_recherche():
+
+    mot_cle = request.args.get('mot_cle')
+
+    professeurs = list(COLLECTION_USERS.find(
+        {
+            '$or': [
+                {'nom': {'$regex': mot_cle+'.*'}},
+                {'prenom': {'$regex': mot_cle+'.*'}}
+            ],
+            '$and': [
+                {'role': 'PROFESSEUR'}
+            ]
+        }
+    ))
+    return render_template('/professeurs/resultat.html', professeurs=professeurs, mot_cle=mot_cle)
+
+
 @app.route('/professeurs/details/<string:id>')
 @is_logged_in
 def professeurs_details(id):
@@ -107,7 +127,6 @@ def professeurs_details(id):
     })
 
     return render_template('/professeurs/details.html', professeur=professeur)
-
 
 
 @app.route('/etudiants')
@@ -119,22 +138,39 @@ def etudiants_index():
     return render_template('/etudiants/index.html', etudiants=etudiants)
 
 
-@app.route('/etudiants/ajouter')
+@app.route('/etudiants/recherche', methods=['GET'])
 @is_logged_in
-def etudiants_ajouter():
-    return render_template('/etudiants/ajouter.html')
+def etudiants_recherche():
+
+    mot_cle = request.args.get('mot_cle')
+
+    etudiants = list(COLLECTION_USERS.find(
+        {
+            '$or': [
+                {'nom': {'$regex': mot_cle+'.*'}},
+                {'prenom': {'$regex': mot_cle+'.*'}}
+            ],
+            '$and': [
+                {'role': 'ETUDIANT'}
+            ]
+        }
+    ))
+    return render_template('/etudiants/resultat.html', etudiants=etudiants, mot_cle=mot_cle)
 
 
-@app.route('/etudiants/modifier')
+@app.route('/etudiants/details/<string:id>')
 @is_logged_in
-def etudiants_modifier():
-    return render_template('/etudiants/modifier.html')
+def etudiants_details(id):
+    etudiant = COLLECTION_USERS.find_one({
+        '_id': ObjectId(id)
+    })
 
+    return render_template('/etudiants/details.html', etudiant=etudiant)
 
 
 @app.errorhandler(404)
 def page_not_found(error):
-    return render_template('error.html'),404
+    return render_template('error.html'), 404
 
 
 if __name__ == '__main__':

@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 
-{% block title %}Gestion des Etudiants{% endblock %}
+{% block title %}Gestion des Professeurs{% endblock %}
 
 
 {% block _search %}
-{% include "/etudiants/_search.html" %}
+{% include "/professeurs/_search.html" %}
 {% endblock %}
 
 {% block page_header %}
@@ -12,12 +12,13 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1 class="m-0">Etudiants</h1>
+                <h1 class="m-0">Professeurs</h1>
             </div><!-- /.col -->
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a href="/">Accueil</a></li>
-                    <li class="breadcrumb-item active">Etudiants</li>
+                    <li class="breadcrumb-item"><a href="/professeurs">Professeurs</a></li>
+                    <li class="breadcrumb-item active">Résultat</li>
                 </ol>
             </div><!-- /.col -->
         </div><!-- /.row -->
@@ -27,23 +28,33 @@
 
 {% block container %}
 <div class="row">
-    {% if etudiants %}
-    {% for etudiant in etudiants %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>Résultat du mot clé: {{ mot_cle }}</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% if professeurs %}
+    {% for professeur in professeurs %}
     <div class="col-md-4">
         <!-- Widget: user widget style 1 -->
         <div class="card card-widget widget-user">
             <!-- Add the bg color to the header using any of the bg-* classes -->
-            <a href="/etudiants/details/{{ etudiant['_id'] }}">
-                <div class="widget-user-header bg-success">
-                    <h3 class="widget-user-username">{{ etudiant['nom'] }}
-                        {{ etudiant['prenom'] }}</h3>
-                    <h5 class="widget-user-desc">{{ etudiant['email'] }}</h5>
+            <a href="/professeurs/details/{{ professeur['_id'] }}">
+                <div class="widget-user-header bg-info">
+                    <h3 class="widget-user-username">{{ professeur['nom'] }}
+                        {{ professeur['prenom'] }}</h3>
+                    <h5 class="widget-user-desc">{{ professeur['email'] }}</h5>
                 </div>
             </a>
 
-            <a href="/etudiants/details/{{ etudiant['_id'] }}">
+            <a href="/professeurs/details/{{ professeur['_id'] }}">
                 <div class="widget-user-image">
-                    <img class="img-circle elevation-2" src="/static/img/{{ etudiant['photo'] }}" alt="User Avatar">
+                    <img class="img-circle elevation-2" src="/static/img/{{ professeur['photo'] }}" alt="User Avatar">
                 </div>
             </a>
 
@@ -74,7 +85,7 @@
     {% endfor %}
     {% else %}
     <div class="col-md-4">
-        <p class="text-danger">Aucun Etudiants.</p>
+        <p class="text-danger">Aucun Professeurs.</p>
     </div>
     {% endif %}
 </div>
