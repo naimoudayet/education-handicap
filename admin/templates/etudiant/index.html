@@ -1,0 +1,161 @@
+{% extends "layout-2.html" %}
+
+{% block title %}
+Éducation pour Handicapés
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <section class="content mt-5">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-4">
+                                <!-- Profile Image -->
+                                <div class="card card-primary card-outline">
+                                    <div class="card-body box-profile">
+
+                                        <h3 class="profile-username text-center">Filtres</h3>
+
+                                        <ul class="list-group list-group-unbordered mb-3">
+                                            <li class="list-group-item">
+                                                <b>Categories</b> <a class="float-right"></a>
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-radio">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox">
+                                                            <label class="form-check-label">Développement web</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox">
+                                                            <label class="form-check-label">Développement d'applications
+                                                                mobiles</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox">
+                                                            <label class="form-check-label">Langages de
+                                                                programmation</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox">
+                                                            <label class="form-check-label">Data science</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox">
+                                                            <label class="form-check-label">Bases de données</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+
+                                            <li class="list-group-item">
+                                                <b>Fuseau horaire</b> <a class="float-right"></a>
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-radio">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox">
+                                                            <label class="form-check-label">Seulement dans votre fuseau
+                                                                horaire</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox">
+                                                            <label class="form-check-label">± 3 heures de votre fuseau
+                                                                horaire</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox">
+                                                            <label class="form-check-label">± 7 heures de votre fuseau
+                                                                horaire</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox">
+                                                            <label class="form-check-label">± 12 heures de votre fuseau
+                                                                horaire</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item">
+                                                <b>Langue</b> <a class="float-right"></a>
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-radio">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox">
+                                                            <label class="form-check-label">Arabe</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox">
+                                                            <label class="form-check-label">Français</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox">
+                                                            <label class="form-check-label">Anglais</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+
+                                        </ul>
+
+                                    </div>
+                                    <!-- /.card-body -->
+                                </div>
+                            </div>
+                            <div class="col-8">
+
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="active tab-pane" id="activity">
+                                            <!-- Post -->
+                                            <div class="post">
+                                                <div class="user-block">
+                                                    <img class="img-circle img-bordered-sm"
+                                                        src="/static/dist/img/user1-128x128.jpg" alt="user image">
+                                                    <span class="username">
+                                                        <a href="#">Jonathan Burke Jr.</a>
+                                                        <span class="float-right">
+                                                            <a href="" class="btn btn-info">Voir Profil</a>
+                                                        </span>
+                                                    </span>
+                                                    <span class="description">Shared publicly - 7:30 PM today</span>
+                                                </div>
+                                                <!-- /.user-block -->
+                                                <p>
+                                                    <span class="text-sm"><i class="fas fa-globe mr-1"></i>
+                                                        English</span>
+                                                    <span class="text-sm"><i class="far fa-clock ml-4"></i> Ville
+                                                        (timezone)</span>
+
+                                                </p>
+                                                <p>
+                                                    Lorem ipsum represents a long-held tradition for designers,
+                                                    typographers and the like. Some people hate it and argue for
+                                                    its demise, but others ignore the hate as they create awesome
+                                                    tools to help create filler text for everyone from bacon lovers
+                                                    to Charlie Sheen fans.
+                                                </p>
+
+                                                <p>
+                                                    <small class="badge badge-danger">JavaScript</small>
+                                                </p>
+
+                                            </div>
+                                            <!-- /.post -->
+                                        </div>
+                                    </div><!-- /.card-body -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /.container-fluid -->
+        </section>
+    </div>
+    <div class="col-1"></div>
+</div>
+
+{% endblock  %}

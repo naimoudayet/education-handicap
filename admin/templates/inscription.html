@@ -25,15 +25,40 @@
                 <a href="/login" class="h1"><b>Éducation pour Handicapés</b></a>
             </div>
             <div class="card-body">
-                <p class="login-box-msg">Connectez-vous pour continuer</p>
+                <p class="login-box-msg">Créer un compte</p>
                 <div class="row">
                     <div class="col-12">
                         {% include "_error_msg.html" %}
                     </div>
                 </div>
                 <form action="" method="POST">
+                    <div class="form-group mb-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="custom-control custom-radio">
+                                    <input class="custom-control-input" type="radio" name="role" id="professeur" value="professeur" checked>
+                                    <label for="professeur" class="custom-control-label"></label>Professeur</input>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="custom-control custom-radio">
+                                    <input class="custom-control-input" type="radio" name="role" id="etudiant" value="etudiant">
+                                    <label for="etudiant" class="custom-control-label">Étudiant</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="input-group mb-3">
-                        <input type="email" name="email" class="form-control" placeholder="Email *" required>
+                        <input value="test test" type="text" name="nom_prenom" class="form-control" placeholder="Nom et prénom *"
+                            required>
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-user"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input  value="test@gmail.com" type="email" name="email" class="form-control" placeholder="Email *" required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-envelope"></span>
@@ -41,7 +66,8 @@
                         </div>
                     </div>
                     <div class="input-group mb-3">
-                        <input type="password" name="mot_de_passe" class="form-control" placeholder="Mot de passe *" required>
+                        <input  value="testtest" type="password" name="mot_de_passe" class="form-control" placeholder="Mot de passe *"
+                            required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-lock"></span>
@@ -49,15 +75,12 @@
                         </div>
                     </div>
                     <div class="row mt-4">
-                        <button type="submit" class="btn btn-primary btn-block">Se Connecter</button>
+                        <button type="submit" class="btn btn-primary btn-block">S'inscrire</button>
                     </div>
                 </form>
 
-                <p class="mt-3 mb-1 text-center">
-                    <a href="forgot-password.html">Mot de passe oublié ?</a>
-                </p>
-                <p class="mb-0  text-center">
-                    Vous n'avez pas de compte ? <a href="/inscription" class="text-center">S'inscrire</a>
+                <p class="mt-3 text-center">
+                    Vous avez déjà un compte ? <a href="/login" class="text-center">Se connecter</a>
                 </p>
             </div>
             <!-- /.card-body -->

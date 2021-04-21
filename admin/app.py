@@ -47,8 +47,7 @@ def logout():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 
-    if 'connected' in session:
-        return redirect(url_for('index'))
+    
 
     if request.method == 'POST':
         email = request.form['email']
@@ -60,19 +59,15 @@ def login():
 
         if result:
             if check_password_hash(result['mot_de_passe'], mot_de_passe):
-                if result['role'] == 'ADMIN':
-
+                  
                     session['connected'] = True
                     session['_id'] = str(result['_id'])
-                    session['nom_prenom'] = result['nom']+' '+result['prenom']
-                    session['photo'] = result['photo']
+                    session['nom_prenom'] = result['nom_prenom']
+                    session['profil_pic'] = result['profil_pic']
                     session['role'] = result['role']
 
                     return redirect(url_for('index'))
-                else:
-                    flash(
-                        'vous n\'êtes pas autorisé à accéder à cette page.', 'warning')
-                    return redirect(url_for('login'))
+                 
             else:
                 flash('svp, vérifiez votre email et mot de passe.', 'danger')
                 return redirect(url_for('login'))
@@ -84,9 +79,54 @@ def login():
     return render_template('login.html')
 
 
+@app.route('/inscription', methods=['GET', 'POST'])
+def inscription():
+
+    if 'connected' in session:
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        role = request.form['role']
+        nom_prenom = request.form['nom_prenom']
+        email = request.form['email']
+        mot_de_passe = request.form['mot_de_passe']
+
+        result = COLLECTION_USERS.find_one({
+            'email': email
+        })
+
+        if result:
+            flash('Vous êtes déjà inscrit.', 'danger')
+            return redirect(url_for('login'))
+        else:
+
+            result = COLLECTION_USERS.insert_one({
+                'profil_pic': 'boxed-bg.jpg',
+                'nom_prenom': nom_prenom,
+                'email': email,
+                'mot_de_passe': generate_password_hash(mot_de_passe, 'pbkdf2:sha256', 10),
+                'role': role.upper()
+            })
+
+            if result:
+                flash('Compte créé.', 'success')
+                return redirect(url_for('login'))
+            else:
+                flash(
+                    'vous ne pouvez pas vous s\'inscrire maintenant, réessayez plus tard.', 'danger')
+                return redirect(url_for('inscription'))
+
+    return render_template('inscription.html')
+
+
 @app.route('/')
-@is_logged_in
 def index():
+    if  session['role'] == 'ADMIN':
+        return render_template('admin/index.html')
+    
+    if  session['role'] == 'ETUDIANT':
+        return render_template('etudiant/index.html')
+        
     return render_template('index.html')
 
 
