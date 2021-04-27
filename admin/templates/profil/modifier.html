@@ -1,0 +1,203 @@
+{% extends "layout-2.html" %}
+
+{% block title %}
+Éducation pour Handicapés
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        {% include "_error_msg.html" %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <section class="content mt-5">
+            <div class="container-fluid">
+                <section class="content">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="/profil" class="btn btn-primary btn-block mb-3">
+                                <i class="fas fa-chevron-left"></i> Retour à mon profil</a>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Modifier Profil</h3>
+
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <ul class="nav nav-pills flex-column">
+                                        <li class="nav-item active">
+                                            <a href="#a_propos" class="nav-link" data-toggle="tab">
+                                                À PROPOS
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="#competences" class="nav-link" data-toggle="tab">
+                                                COMPÉTENCES
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="#infor_personnelles" class="nav-link" data-toggle="tab">
+                                                INFORMATIONS PERSONNELLES
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <!-- /.card-body -->
+                            </div>
+                            <!-- /.card -->
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-md-9">
+                            <div class="tab-content">
+                                <div class="active tab-pane" id="a_propos">
+                                    <div class="card card-primary card-outline ">
+                                        <div class="card-header">
+                                            <h3 class="card-title">À PROPOS</h3>
+                                        </div>
+                                        <form action="{{ url_for('profil_a_propos') }}" method="POST">
+                                            <!-- /.card-header -->
+                                            <div class="card-body p-0">
+                                                <div class="row mt-5">
+                                                    <div class="col-1"></div>
+                                                    <div class="col-10">
+                                                        <div class="form-group">
+                                                            <label for="describe_you">Une phrase vous décrivant</label>
+                                                            <input type="text" value="{{ a_propos['describe_you'] }}"
+                                                                name="describe_you" class="form-control" required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="biographie">Biographie</label>
+                                                            <textarea rows="6" type="text" name="biographie"
+                                                                class="form-control">{{a_propos['biographie']}}</textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-1"></div>
+                                                </div>
+                                                <!-- /.mail-box-messages -->
+                                            </div>
+                                            <!-- /.card-body -->
+                                            <div class="card-footer p-0">
+                                                <div class="row mt-2 mb-3">
+                                                    <div class="col-1"></div>
+                                                    <div class="col-10">
+                                                        <button type="submit" class="btn btn-primary">Modifier</button>
+                                                    </div>
+                                                    <div class="col-1"></div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <div class=" tab-pane" id="competences">
+                                    <div class="card card-primary card-outline ">
+                                        <div class="card-header">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <h3 class="card-title">COMPÉTENCES</h3>
+                                                </div>
+                                                <div class="col-6">
+                                                    <a href="/profil/modifier/competence/ajouter"
+                                                        class="float-right">Ajouter une nouvelle compétence</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <div class="table-responsive mailbox-messages">
+                                                <ul class="products-list product-list-in-card pl-2 pr-2">
+
+                                                    {% for competence in competences %}
+                                                    <li class="item">
+                                                        <div class="product-img">
+                                                            <img src="/static/img/java.png" alt="Product Image"
+                                                                class="img-size-50">
+                                                        </div>
+                                                        <div class="product-info">
+                                                            <span href="javascript:void(0)"
+                                                                class="product-title">{{ competence['technologie'] }}</span>
+                                                            <span class="float-right">
+                                                                <form
+                                                                    action="{{ url_for('competence_supprimer', id=competence['_id']) }}"
+                                                                    onsubmit="return confirm('supprimer compétence ?');"
+                                                                    method="post">
+                                                                    <button type="submit" class="badge badge-danger">
+                                                                        <i class="far fa-trash-alt"></i>
+                                                                    </button>
+                                                                </form>
+                                                            </span>
+                                                            <span class="float-right ml-1 mr-1">
+                                                                <form
+                                                                    action="{{ url_for('competence_modifier', id=competence['_id']) }}">
+                                                                    <button type="submit" class="badge badge-success ">
+                                                                        <i class="far fa-edit text-light"></i>
+                                                                    </button>
+                                                                </form>
+                                                            </span>
+                                                            <br>
+
+                                                            <span class="product-description">
+                                                                {{ competence['annee_experience'] }} années d'expérience
+                                                            </span>
+                                                        </div>
+                                                    </li>
+                                                    {% endfor %}
+                                                    <!-- /.item -->
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <!-- /.card-body -->
+                                        <div class="card-footer p-0">
+                                            <div class="mailbox-controls">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane" id="infor_personnelles">
+                                    <div class="card card-primary card-outline ">
+                                        <div class="card-header">
+                                            <h3 class="card-title">INFORMATIONS PERSONNELLES</h3>
+
+                                            <!-- /.card-tools -->
+                                        </div>
+                                        <!-- /.card-header -->
+                                        <div class="card-body p-0">
+                                            <div class="table-responsive mailbox-messages">
+                                                <h1>INFORMATIONS PERSONNELLES</h1>
+                                            </div>
+                                            <!-- /.mail-box-messages -->
+                                        </div>
+                                        <!-- /.card-body -->
+                                        <div class="card-footer p-0">
+                                            <div class="mailbox-controls">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                    <!-- /.row -->
+                </section>
+                <!-- /.content -->
+            </div>
+
+    </div><!-- /.container-fluid -->
+    </section>
+</div>
+<div class="col-1"></div>
+</div>
+
+{% endblock  %}

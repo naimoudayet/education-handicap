@@ -12,6 +12,8 @@ DB = CLIENT['education_handicap']
 
 # choisir collection
 COLLECTION_USERS = DB['USERS']
+COLLECTION_A_PROPOS = DB['A_PROPOS']
+COLLECTION_COMPETENCES = DB['COMPETENCES']
 
 app = Flask(__name__)
 app.debug = True
@@ -24,11 +26,7 @@ def is_logged_in(f):
     @wraps(f)
     def wrap(*args, **kwargs):
         if 'connected' in session:
-            if session['role'] == 'ADMIN':
-                return f(*args, **kwargs)
-            else:
-                flash('vous n\'êtes pas autorisé à accéder à cette page.', 'warning')
-                return redirect(url_for('login'))
+            return f(*args, **kwargs)
         else:
             flash('Veuillez vous connecter', 'warning')
             return redirect(url_for('login'))
@@ -46,9 +44,6 @@ def logout():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-
-    
-
     if request.method == 'POST':
         email = request.form['email']
         mot_de_passe = request.form['mot_de_passe']
@@ -59,15 +54,15 @@ def login():
 
         if result:
             if check_password_hash(result['mot_de_passe'], mot_de_passe):
-                  
-                    session['connected'] = True
-                    session['_id'] = str(result['_id'])
-                    session['nom_prenom'] = result['nom_prenom']
-                    session['profil_pic'] = result['profil_pic']
-                    session['role'] = result['role']
 
-                    return redirect(url_for('index'))
-                 
+                session['connected'] = True
+                session['_id'] = str(result['_id'])
+                session['nom_prenom'] = result['nom_prenom']
+                session['profil_pic'] = result['profil_pic']
+                session['role'] = result['role']
+
+                return redirect(url_for('index'))
+
             else:
                 flash('svp, vérifiez votre email et mot de passe.', 'danger')
                 return redirect(url_for('login'))
@@ -120,13 +115,14 @@ def inscription():
 
 
 @app.route('/')
+@is_logged_in
 def index():
-    if  session['role'] == 'ADMIN':
+    if session['role'] == 'ADMIN':
         return render_template('admin/index.html')
-    
-    if  session['role'] == 'ETUDIANT':
+
+    if session['role'] == 'ETUDIANT':
         return render_template('etudiant/index.html')
-        
+
     return render_template('index.html')
 
 
@@ -206,6 +202,172 @@ def etudiants_details(id):
     })
 
     return render_template('/etudiants/details.html', etudiant=etudiant)
+
+
+@app.route('/profil')
+@is_logged_in
+def profil_index():
+    return render_template('/profil/index.html')
+
+
+@app.route('/profil/modifier')
+@is_logged_in
+def profil_modifier():
+    a_propos = COLLECTION_A_PROPOS.find_one({
+        'id_utilisateur': session['_id']
+    })
+    competences = list(COLLECTION_COMPETENCES.find({
+        'id_utilisateur': session['_id']
+    }))
+    return render_template('/profil/modifier.html', a_propos=a_propos, competences=competences)
+
+
+@app.route('/profil/a_propos', methods=['POST'])
+@is_logged_in
+def profil_a_propos():
+    if request.method == 'POST':
+        describe_you = request.form['describe_you']
+        biographie = request.form['biographie']
+
+        result = COLLECTION_A_PROPOS.find_one({
+            'id_utilisateur': session['_id']
+        })
+
+        if result:
+            # modifier
+            result = COLLECTION_A_PROPOS.update_one({
+                '_id': result['_id']
+            }, {
+                '$set': {
+                    'describe_you': describe_you,
+                    'biographie': biographie
+                }
+            })
+            if result:
+                flash('Profil modifier.', 'success')
+                return redirect(url_for('profil_modifier'))
+            else:
+                flash(
+                    'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
+                return redirect(url_for('profil_modifier'))
+        else:
+            # ajouter
+            data = {
+                'id_utilisateur': session['_id'],
+                'describe_you': describe_you,
+                'biographie': biographie
+            }
+
+            result = COLLECTION_A_PROPOS.insert_one(data)
+
+            if result:
+                flash('Profil modifier.', 'success')
+                return redirect(url_for('profil_modifier'))
+            else:
+                flash(
+                    'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
+                return redirect(url_for('profil_modifier'))
+
+    return render_template('/profil/modifier.html')
+
+
+@app.route('/profil/modifier/competence/ajouter', methods=['GET', 'POST'])
+@is_logged_in
+def competence_ajouter():
+    if request.method == 'POST':
+        technologie = request.form['technologie']
+        annee_experience = request.form['annee_experience']
+        technologie_connexes = request.form['technologie_connexes']
+        experience_technologie = request.form['experience_technologie']
+
+        # ajouter
+        data = {
+            'id_utilisateur': session['_id'],
+            'technologie': technologie,
+            'annee_experience': annee_experience,
+            'technologie_connexes': technologie_connexes,
+            'experience_technologie': experience_technologie
+        }
+
+        result = COLLECTION_COMPETENCES.insert_one(data)
+
+        if result:
+            flash('Compétences ajouter.', 'success')
+            return redirect(url_for('profil_modifier'))
+        else:
+            flash(
+                'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
+            return redirect(url_for('profil_modifier'))
+
+    return render_template('/profil/competence/ajouter.html')
+
+
+@app.route('/profil/modifier/competence/modifier/<string:id>', methods=['GET', 'POST'])
+@is_logged_in
+def competence_modifier(id):
+    if ObjectId.is_valid(id):
+        competence = COLLECTION_COMPETENCES.find_one({
+            '_id': ObjectId(id)
+        })
+        if competence:
+            if request.method == 'POST':
+                technologie = request.form['technologie']
+                annee_experience = request.form['annee_experience']
+                technologie_connexes = request.form['technologie_connexes']
+                experience_technologie = request.form['experience_technologie']
+
+                # modifier
+
+                result = COLLECTION_COMPETENCES.update_one({
+                    '_id': ObjectId(id)
+                },  {
+                    '$set': {
+                        'technologie': technologie,
+                        'annee_experience': annee_experience,
+                        'technologie_connexes': technologie_connexes,
+                        'experience_technologie': experience_technologie
+                    }
+                })
+
+                if result:
+                    flash('Compétences modifier.', 'success')
+                    return redirect(url_for('profil_modifier'))
+                else:
+                    flash(
+                        'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
+                    return redirect(url_for('profil_modifier'))
+
+            return render_template('/profil/competence/modifier.html', competence=competence)
+
+    flash('Compétences introuvable.', 'success')
+    return redirect(url_for('profil_modifier'))
+
+
+@app.route('/profil/modifier/competence/supprimer/<string:id>', methods=['POST'])
+@is_logged_in
+def competence_supprimer(id):
+    if ObjectId.is_valid(id):
+        competence = COLLECTION_COMPETENCES.find_one({
+            '_id': ObjectId(id)
+        })
+        if competence:
+            if request.method == 'POST':
+
+                # modifier
+                result = COLLECTION_COMPETENCES.delete_one({
+                    '_id': ObjectId(id)
+                })
+
+                if result:
+                    flash('Compétences supprimer.', 'success')
+                    return redirect(url_for('profil_modifier'))
+                else:
+                    flash(
+                        'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
+                    return redirect(url_for('profil_modifier'))
+
+    flash('Compétences introuvable.', 'success')
+    return redirect(url_for('profil_modifier'))
 
 
 @app.errorhandler(404)

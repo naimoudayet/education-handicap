@@ -1,0 +1,149 @@
+{% extends "layout-2.html" %}
+
+{% block title %}
+Éducation pour Handicapés
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        {% include "_error_msg.html" %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <section class="content mt-5">
+            <div class="container-fluid">
+                <section class="content">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <a href="/profil/modifier" class="btn btn-primary btn-block mb-3">
+                                <i class="fas fa-chevron-left"></i> Retour</a>
+
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-md-9">
+                            <div class="tab-content">
+                                <div class="active tab-pane" id="a_propos">
+                                    <div class="card card-primary card-outline ">
+                                        <div class="card-header">
+                                            <h3 class="card-title">Modifier Compétence</h3>
+                                        </div>
+                                        <form action="" method="POST">
+                                            <!-- /.card-header -->
+                                            <div class="card-body p-0">
+                                                <div class="row mt-5">
+                                                    <div class="col-1"></div>
+                                                    <div class="col-10">
+                                                        <div class="form-group">
+                                                            <label for="technologie">Technologie</label>
+                                                            <input type="text" value="{{ competence['technologie'] }}"
+                                                                name="technologie" class="form-control" required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="annee_experience">Années d'expérience</label>
+                                                            <input type="number"
+                                                                value="{{ competence['annee_experience'] }}" min="1"
+                                                                max="20" name="annee_experience" class="form-control"
+                                                                required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="technologie_connexes">Technologies
+                                                                connexes</label>
+                                                            <input type="text"
+                                                                value="{{ competence['technologie_connexes'] }}"
+                                                                name="technologie_connexes" class="form-control"
+                                                                required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="experience_technologie">Expérience avec la
+                                                                technologie</label>
+                                                            <textarea rows="6" type="text" name="experience_technologie"
+                                                                class="form-control">{{ competence['experience_technologie'] }}</textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-1"></div>
+                                                </div>
+                                                <!-- /.mail-box-messages -->
+                                            </div>
+                                            <!-- /.card-body -->
+                                            <div class="card-footer p-0">
+                                                <div class="row mt-2 mb-3">
+                                                    <div class="col-1"></div>
+                                                    <div class="col-10">
+                                                        <button type="submit" class="btn btn-primary">Modifier</button>
+                                                    </div>
+                                                    <div class="col-1"></div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane" id="competences">
+                                    <div class="card card-primary card-outline ">
+                                        <div class="card-header">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <h3 class="card-title">COMPÉTENCES</h3>
+                                                </div>
+                                                <div class="col-6">
+                                                    <a href="/profil/modifier/competence/ajouter"
+                                                        class="float-right">Ajouter une nouvelle compétence</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <div class="table-responsive mailbox-messages">
+
+                                            </div>
+                                        </div>
+                                        <!-- /.card-body -->
+                                        <div class="card-footer p-0">
+                                            <div class="mailbox-controls">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane" id="infor_personnelles">
+                                    <div class="card card-primary card-outline ">
+                                        <div class="card-header">
+                                            <h3 class="card-title">INFORMATIONS PERSONNELLES</h3>
+
+                                            <!-- /.card-tools -->
+                                        </div>
+                                        <!-- /.card-header -->
+                                        <div class="card-body p-0">
+                                            <div class="table-responsive mailbox-messages">
+                                                <h1>INFORMATIONS PERSONNELLES</h1>
+                                            </div>
+                                            <!-- /.mail-box-messages -->
+                                        </div>
+                                        <!-- /.card-body -->
+                                        <div class="card-footer p-0">
+                                            <div class="mailbox-controls">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                    <!-- /.row -->
+                </section>
+                <!-- /.content -->
+            </div>
+
+    </div><!-- /.container-fluid -->
+    </section>
+</div>
+<div class="col-1"></div>
+</div>
+
+{% endblock  %}

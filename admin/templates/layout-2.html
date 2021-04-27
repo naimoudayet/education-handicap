@@ -200,16 +200,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             <i class="fas fa-user"></i>
                         </a>
                         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                            
+
                             <div class="dropdown-divider"></div>
                             <a href="/profil" class="dropdown-item">
-                                <i class="fas fa-user mr-2"></i> Profil 
+                                <i class="fas fa-user mr-2"></i> Profil
                             </a>
                             <div class="dropdown-divider"></div>
                             <a href="/logout" class="dropdown-item">
-                                <i class="fas fa-sign-out-alt mr-2"></i> Se Déconnecter 
+                                <i class="fas fa-sign-out-alt mr-2"></i> Se Déconnecter
                             </a>
-                            <div class="dropdown-divider"></div> 
+                            <div class="dropdown-divider"></div>
                         </div>
                     </li>
                     {% else %}
@@ -231,10 +231,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <!-- /.navbar -->
 
         <!-- Content Wrapper. Contains page content -->
-        <div class="content-wrapper">
-            {% block content_header %}
-
-            {% endblock  %}
+        <div class="content-wrapper"> 
+            {% block content_header %}{% endblock  %}
 
             {% block content %}
 
