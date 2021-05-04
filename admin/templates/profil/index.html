@@ -21,7 +21,7 @@
 
                                         <div class="text-center">
                                             <img class="profile-user-img img-fluid img-circle"
-                                                src="/static/img/default_user.png" alt="User profile picture">
+                                                src="/static/img/{{ profil['profil_pic'] }}" alt="User profile picture">
                                         </div>
 
                                         <h3 class="profile-username text-center"></h3>
@@ -48,8 +48,50 @@
                                     <div class="card-body box-profile">
                                         {% include "_error_msg.html" %}
 
-                                    </div>
-                                    <!-- /.card-body -->
+                                        <div class="card-header">
+                                            <h3 class="card-title">À PROPOS</h3>
+                                        </div>
+                                        <div class="card-body">
+
+                                            <b>{{ a_propos['describe_you'] }}</b>
+                                            <p class="mt-3">{{ a_propos['biographie'] }}</p>
+
+                                            <span class="mt-3 text-muted">
+                                                <i class="far fa-clock"></i> {{ profil['fuseau_horaire'] }}
+                                            </span>
+                                        </div>
+                                        <hr>
+                                        <div class="card-header">
+                                            <h3 class="card-title">COMPÉTENCES</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive mailbox-messages">
+                                                <ul class="products-list product-list-in-card pl-2 pr-2">
+
+                                                    {% for competence in competences %}
+                                                    <li class="item">
+                                                        <div class="product-img">
+                                                            <img src="/static/img/java.png" alt="Product Image"
+                                                                class="img-size-50">
+                                                        </div>
+                                                        <div class="product-info">
+                                                            <span href="javascript:void(0)"
+                                                                class="product-title">{{ competence['technologie'] }}</span>
+
+
+                                                            <br>
+
+                                                            <span class="product-description">
+                                                                {{ competence['annee_experience'] }} années d'expérience
+                                                            </span>
+                                                        </div>
+                                                    </li>
+                                                    {% endfor %}
+                                                    <!-- /.item -->
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div> <!-- /.card-body -->
                                 </div>
                             </div>
                         </div>

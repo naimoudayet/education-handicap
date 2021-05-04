@@ -4,6 +4,10 @@
 Éducation pour Handicapés
 {% endblock %}
 
+{% block meta %} 
+<meta id="technologies" data-name="{{ technologies }}"> 
+{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-12">
@@ -38,9 +42,21 @@
                                                     <div class="col-1"></div>
                                                     <div class="col-10">
                                                         <div class="form-group">
+                                                            <label for="categorie">Catégorie</label>
+                                                            <select name="categorie" id="categorie" class="form-control"
+                                                                onchange="displayTechnologies(this.value, 0)">
+                                                                <option value="">Choisr la catégorie</option>
+
+                                                            </select>
+
+                                                        </div>
+                                                        <div class="form-group">
                                                             <label for="technologie">Technologie</label>
-                                                            <input type="text" value="{{ competence['technologie'] }}"
-                                                                name="technologie" class="form-control" required>
+                                                            <select name="technologie" id="technologie"
+                                                                class="form-control">
+                                                                <option value="">Choisr la technologie</option>
+                                                            </select>
+
                                                         </div>
                                                         <div class="form-group">
                                                             <label for="annee_experience">Années d'expérience</label>
@@ -144,6 +160,57 @@
     </section>
 </div>
 <div class="col-1"></div>
-</div>
+</div> 
+<input type="hidden" id="cat" value="{{ competence['categorie'] }}" />
+<input type="hidden" id="tech" value="{{ competence['technologie'] }}" />
+
+
+<script>
+    const technologies = JSON.parse('{{ technologies | tojson }}');
+    
+    const competenceCategorie = document.getElementById("cat").value;
+    const competenceTechnologie = document.getElementById("tech").value;
+ 
+    const select_categorie = document.getElementById('categorie');
+    const select_technologie = document.getElementById('technologie');
+
+
+    technologies.forEach(cat => {
+        const element_option = document.createElement('option');
+        element_option.setAttribute('value', cat.categorie);
+        element_option.textContent = cat.categorie;
+
+        if(cat.categorie == competenceCategorie){
+            element_option.setAttribute('selected', true);
+            displayTechnologies(competenceCategorie, 1);
+        }
+
+        select_categorie.appendChild(element_option);
+    });
+
+    function displayTechnologies(value, index) {
+        select_technologie.innerHTML = "";
+
+        const default_option = document.createElement('option');
+        default_option.textContent = "Choisir la technologie";
+        select_technologie.appendChild(default_option);
+
+        technologies.forEach(cat => {
+            if (cat.categorie === value) {
+                cat.technologie.forEach(item => {
+                    const element_option = document.createElement('option');
+                    element_option.setAttribute('value', item.nom);
+                    element_option.textContent = item.nom;
+
+                    if(index == 1 && item.nom == competenceTechnologie){
+                        element_option.setAttribute('selected', true);
+                    }
+
+                    select_technologie.appendChild(element_option);
+                });
+            }
+        });
+    }
+</script>
 
 {% endblock  %}

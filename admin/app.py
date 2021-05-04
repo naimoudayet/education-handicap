@@ -1,9 +1,17 @@
 from flask import Flask, render_template, request, flash, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson.objectid import ObjectId
+
+import os
 import pymongo
 
 from functools import wraps
+
+from technologie import technologies
+from timezone import timezones
+
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+target = os.path.join(APP_ROOT, r"static\img")
 
 # connection au mongo
 CLIENT = pymongo.MongoClient('mongodb://localhost:27017/')
@@ -32,9 +40,8 @@ def is_logged_in(f):
             return redirect(url_for('login'))
     return wrap
 
+
 # Logout
-
-
 @app.route('/logout')
 @is_logged_in
 def logout():
@@ -207,7 +214,16 @@ def etudiants_details(id):
 @app.route('/profil')
 @is_logged_in
 def profil_index():
-    return render_template('/profil/index.html')
+    a_propos = COLLECTION_A_PROPOS.find_one({
+        'id_utilisateur': session['_id']
+    })
+    competences = list(COLLECTION_COMPETENCES.find({
+        'id_utilisateur': session['_id']
+    }))
+    profil = COLLECTION_USERS.find_one({
+        '_id': ObjectId(session['_id'])
+    })
+    return render_template('/profil/index.html', profil=profil, a_propos=a_propos, competences=competences)
 
 
 @app.route('/profil/modifier')
@@ -219,7 +235,124 @@ def profil_modifier():
     competences = list(COLLECTION_COMPETENCES.find({
         'id_utilisateur': session['_id']
     }))
-    return render_template('/profil/modifier.html', a_propos=a_propos, competences=competences)
+    profil = COLLECTION_USERS.find_one({
+        '_id': ObjectId(session['_id'])
+    })
+    return render_template('/profil/modifier.html',
+                           a_propos=a_propos,
+                           competences=competences,
+                           profil=profil,
+                           timezones=timezones
+                           )
+
+
+@app.route('/profil/update', methods=['POST'])
+@is_logged_in
+def profil_update():
+    if request.method == 'POST':
+        nom_prenom = request.form['nom_prenom']
+        email = request.form['email']
+        fuseau_horaire = request.form['fuseau_horaire']
+
+        # upload image
+        for upload in request.files.getlist('profil_pic'):
+            # get file name
+            img = upload.filename
+            if img == '': 
+                # modifier
+                result = COLLECTION_USERS.update_one({
+                    '_id': ObjectId(session['_id'])
+                }, {
+                    '$set': {
+                        'nom_prenom': nom_prenom,
+                        'email': email,
+                        'fuseau_horaire': fuseau_horaire
+                    }
+                })
+                if result:
+                    flash('Profil modifier.', 'success')
+                    return redirect(url_for('profil_modifier'))
+                else:
+                    flash(
+                        'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
+                    return redirect(url_for('profil_modifier'))
+            else:
+                # get file extension
+                ext = img.split('.')[1].lower()
+                if ext in ['png', 'jpg', 'jpeg']:
+                    # save image in target
+                    destination = '/'.join([target, img])
+                    upload.save(destination)
+
+                    # modifier
+                    result = COLLECTION_USERS.update_one({
+                        '_id': ObjectId(session['_id'])
+                    }, {
+                        '$set': {
+                            'profil_pic': img,
+                            'nom_prenom': nom_prenom,
+                            'email': email,
+                            'fuseau_horaire': fuseau_horaire
+                        }
+                    })
+                    if result:
+                        flash('Profil modifier.', 'success')
+                        return redirect(url_for('profil_modifier'))
+                    else:
+                        flash(
+                            'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
+                        return redirect(url_for('profil_modifier'))
+                flash(
+                    'Seuls les fichiers {png, jpg, jpeg} sont autorisés...', 'danger')
+                return render_template('entreprise/create.html')
+
+        
+
+    return render_template('/profil/modifier.html')
+
+
+@app.route('/profil/update_password', methods=['POST'])
+@is_logged_in
+def profil_update_password():
+    if request.method == 'POST':
+        mot_de_passe_actuel = request.form['mot_de_passe_actuel']
+        nouveau_pass = request.form['nouveau_pass']
+        confirmer_pass = request.form['confirmer_pass']
+
+        user = COLLECTION_USERS.find_one({
+        '_id': ObjectId(session['_id'])
+        })
+
+        if check_password_hash(user['mot_de_passe'], mot_de_passe_actuel):
+            if nouveau_pass == confirmer_pass:
+                # modifier
+                result = COLLECTION_USERS.update_one({
+                    '_id': ObjectId(session['_id'])
+                }, {
+                    '$set': {
+                        'mot_de_passe': generate_password_hash(nouveau_pass, 'pbkdf2:sha256', 10),
+                    }
+                })
+                if result:
+                    flash('Profil modifier.', 'success')
+                    return redirect(url_for('profil_modifier'))
+                else:
+                    flash(
+                        'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
+                    return redirect(url_for('profil_modifier'))
+            else:
+                flash('mot de passe non identiques.', 'danger')
+                return redirect(url_for('profil_modifier'))
+        else:
+            flash('svp, vérifiez votre mot de passe.', 'danger')
+            return redirect(url_for('profil_modifier'))
+
+
+        
+
+    return render_template('/profil/modifier.html')
+
+
 
 
 @app.route('/profil/a_propos', methods=['POST'])
@@ -275,6 +408,7 @@ def profil_a_propos():
 @is_logged_in
 def competence_ajouter():
     if request.method == 'POST':
+        categorie = request.form['categorie']
         technologie = request.form['technologie']
         annee_experience = request.form['annee_experience']
         technologie_connexes = request.form['technologie_connexes']
@@ -283,6 +417,7 @@ def competence_ajouter():
         # ajouter
         data = {
             'id_utilisateur': session['_id'],
+            'categorie': categorie,
             'technologie': technologie,
             'annee_experience': annee_experience,
             'technologie_connexes': technologie_connexes,
@@ -299,7 +434,7 @@ def competence_ajouter():
                 'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
             return redirect(url_for('profil_modifier'))
 
-    return render_template('/profil/competence/ajouter.html')
+    return render_template('/profil/competence/ajouter.html', technologies=technologies)
 
 
 @app.route('/profil/modifier/competence/modifier/<string:id>', methods=['GET', 'POST'])
@@ -311,6 +446,7 @@ def competence_modifier(id):
         })
         if competence:
             if request.method == 'POST':
+                categorie = request.form['categorie']
                 technologie = request.form['technologie']
                 annee_experience = request.form['annee_experience']
                 technologie_connexes = request.form['technologie_connexes']
@@ -322,6 +458,7 @@ def competence_modifier(id):
                     '_id': ObjectId(id)
                 },  {
                     '$set': {
+                        'categorie': categorie,
                         'technologie': technologie,
                         'annee_experience': annee_experience,
                         'technologie_connexes': technologie_connexes,
@@ -337,7 +474,7 @@ def competence_modifier(id):
                         'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
                     return redirect(url_for('profil_modifier'))
 
-            return render_template('/profil/competence/modifier.html', competence=competence)
+            return render_template('/profil/competence/modifier.html', competence=competence, technologies=technologies)
 
     flash('Compétences introuvable.', 'success')
     return redirect(url_for('profil_modifier'))
