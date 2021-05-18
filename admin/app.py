@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, flash, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson.objectid import ObjectId
+from datetime import datetime
 
 import os
 import pymongo
@@ -9,6 +10,7 @@ from functools import wraps
 
 from technologie import technologies
 from timezone import timezones
+from langue import langues
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 target = os.path.join(APP_ROOT, r"static\img")
@@ -22,6 +24,7 @@ DB = CLIENT['education_handicap']
 COLLECTION_USERS = DB['USERS']
 COLLECTION_A_PROPOS = DB['A_PROPOS']
 COLLECTION_COMPETENCES = DB['COMPETENCES']
+COLLECTION_AVIS = DB['AVIS']
 
 app = Flask(__name__)
 app.debug = True
@@ -128,7 +131,20 @@ def index():
         return render_template('admin/index.html')
 
     if session['role'] == 'ETUDIANT':
-        return render_template('etudiant/index.html')
+
+        users = list(
+            COLLECTION_USERS.find({
+                'role': 'PROFESSEUR'
+            })
+        )
+        competences = list(
+            COLLECTION_COMPETENCES.find()
+        )
+        a_propos = list(
+            COLLECTION_A_PROPOS.find()
+        )
+
+        return render_template('etudiant/index.html', users=users, competences=competences, a_propos=a_propos)
 
     return render_template('index.html')
 
@@ -242,7 +258,8 @@ def profil_modifier():
                            a_propos=a_propos,
                            competences=competences,
                            profil=profil,
-                           timezones=timezones
+                           timezones=timezones,
+                           langues=langues
                            )
 
 
@@ -253,12 +270,13 @@ def profil_update():
         nom_prenom = request.form['nom_prenom']
         email = request.form['email']
         fuseau_horaire = request.form['fuseau_horaire']
+        langue = request.form['langue']
 
         # upload image
         for upload in request.files.getlist('profil_pic'):
             # get file name
             img = upload.filename
-            if img == '': 
+            if img == '':
                 # modifier
                 result = COLLECTION_USERS.update_one({
                     '_id': ObjectId(session['_id'])
@@ -266,7 +284,8 @@ def profil_update():
                     '$set': {
                         'nom_prenom': nom_prenom,
                         'email': email,
-                        'fuseau_horaire': fuseau_horaire
+                        'fuseau_horaire': fuseau_horaire,
+                        'langue': langue
                     }
                 })
                 if result:
@@ -306,8 +325,6 @@ def profil_update():
                     'Seuls les fichiers {png, jpg, jpeg} sont autorisés...', 'danger')
                 return render_template('entreprise/create.html')
 
-        
-
     return render_template('/profil/modifier.html')
 
 
@@ -320,7 +337,7 @@ def profil_update_password():
         confirmer_pass = request.form['confirmer_pass']
 
         user = COLLECTION_USERS.find_one({
-        '_id': ObjectId(session['_id'])
+            '_id': ObjectId(session['_id'])
         })
 
         if check_password_hash(user['mot_de_passe'], mot_de_passe_actuel):
@@ -347,12 +364,7 @@ def profil_update_password():
             flash('svp, vérifiez votre mot de passe.', 'danger')
             return redirect(url_for('profil_modifier'))
 
-
-        
-
     return render_template('/profil/modifier.html')
-
-
 
 
 @app.route('/profil/a_propos', methods=['POST'])
@@ -505,6 +517,72 @@ def competence_supprimer(id):
 
     flash('Compétences introuvable.', 'success')
     return redirect(url_for('profil_modifier'))
+
+
+@app.route('/professeur/<string:id>')
+def professeur_details(id):
+    if ObjectId.is_valid(id):
+
+        user = COLLECTION_USERS.find_one({
+            '_id': ObjectId(id),
+            'role': 'PROFESSEUR'
+        })
+        competences = list(
+            COLLECTION_COMPETENCES.find({
+                'id_utilisateur': id
+            })
+        )
+        avis = list(
+            COLLECTION_AVIS.find({
+                'id_professeur': id
+            })
+        )
+
+        note = 0
+        for item in avis:
+            note += int(item['avis'])
+
+        note = note / len(avis)
+
+        etudiants = list(
+            COLLECTION_USERS.find({
+                'role': 'ETUDIANT'
+            })
+        )
+        a_propos = COLLECTION_A_PROPOS.find_one({
+            'id_utilisateur': id
+        })
+        if user:
+            return render_template('professeur/index.html', note=note, technologies=technologies, professeur=user,
+                                   competences=competences, a_propos=a_propos, avis=avis, etudiants=etudiants)
+
+    return redirect(url_for('index'))
+
+
+@app.route('/avis_ajouter/<string:id>', methods=['POST'])
+@is_logged_in
+def avis_ajouter(id):
+    commentaire = request.form['commentaire']
+    avis = request.form['avis']
+
+    result = COLLECTION_AVIS.find_one({
+        'id_professeur': id,
+        'id_etudiant': session['_id']
+    })
+
+    if result:
+        return redirect(url_for('professeur_details', id=id))
+    else:
+        now = datetime.now()
+        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+        COLLECTION_AVIS.insert_one({
+            'id_professeur': id,
+            'id_etudiant': session['_id'],
+            'commentaire': commentaire,
+            'avis': avis,
+            'date_heure': dt_string
+        })
+        return redirect(url_for('professeur_details', id=id))
 
 
 @app.errorhandler(404)

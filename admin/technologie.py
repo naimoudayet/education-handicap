@@ -15,7 +15,7 @@ technologies = [
                 'nom': 'Django'
             },
             {
-                'icon': '',
+                'icon': 'js-square',
                 'nom': 'Express'
             },
             {
@@ -27,7 +27,7 @@ technologies = [
                 'nom': 'jQuery'
             },
             {
-                'icon': '',
+                'icon': 'laravel',
                 'nom': 'Laravel'
             },
             {
@@ -109,7 +109,7 @@ technologies = [
                 'nom': 'Java'
             },
             {
-                'icon': '',
+                'icon': 'js-square',
                 'nom': 'JavaScript'
             },
             {
