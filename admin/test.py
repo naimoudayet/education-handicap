@@ -7,24 +7,27 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 #print(generate_password_hash('password', 'pbkdf2:sha256', 10))
 
-
+from datetime import datetime
 # connection au mongo
 CLIENT = pymongo.MongoClient('mongodb://localhost:27017/')
 # choisir base
 DB = CLIENT['education_handicap']
 
 # choisir collection
-COLLECTION_USERS = DB['USERS']
+COLLECTION_USERS = DB['users']
 
 data_1 = {
-    'photo': 'user2-160x160.jpg',
-    'nom': 'admin',
-    'prenom': 'admin',
+    'profil_pic': 'default_user.png',
+    'nom_prenom': 'admin admin',
     'email': 'admin@gmail.com',
-    # pass, mathod, salt
     'mot_de_passe': generate_password_hash('adminadmin', 'pbkdf2:sha256', 10),
-    'role': 'ADMIN'
+    'fuseau_horaire': 'GMT+0',
+    'langue': 'Français',
+    'role': 'ADMIN',
+    'date_inscription': datetime.now()
 }
+COLLECTION_USERS.insert_one(data_1)
+'''
 data_2 = {
     'photo': 'user2-160x160.jpg',
     'nom': 'test',
@@ -44,6 +47,7 @@ data_3 = {
     'role': 'PROFESSEUR'
 }
 
-COLLECTION_USERS.insert_one(data_1)
+
 COLLECTION_USERS.insert_one(data_2)
 COLLECTION_USERS.insert_one(data_3)
+'''

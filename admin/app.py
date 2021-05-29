@@ -21,10 +21,11 @@ CLIENT = pymongo.MongoClient('mongodb://localhost:27017/')
 DB = CLIENT['education_handicap']
 
 # choisir collection
-COLLECTION_USERS = DB['USERS']
-COLLECTION_A_PROPOS = DB['A_PROPOS']
-COLLECTION_COMPETENCES = DB['COMPETENCES']
-COLLECTION_AVIS = DB['AVIS']
+COLLECTION_USERS = DB['users']
+COLLECTION_A_PROPOS = DB['a_propos']
+COLLECTION_COMPETENCES = DB['competences']
+COLLECTION_AVIS = DB['avis']
+COLLECTION_COURS = DB['cours']
 
 app = Flask(__name__)
 app.debug = True
@@ -106,11 +107,14 @@ def inscription():
         else:
 
             result = COLLECTION_USERS.insert_one({
-                'profil_pic': 'boxed-bg.jpg',
+                'profil_pic': 'default_user.png',
                 'nom_prenom': nom_prenom,
                 'email': email,
                 'mot_de_passe': generate_password_hash(mot_de_passe, 'pbkdf2:sha256', 10),
-                'role': role.upper()
+                'fuseau_horaire': 'GMT+0',
+                'langue': 'Français',
+                'role': role.upper(),
+                'date_inscription': datetime.now()
             })
 
             if result:
@@ -128,7 +132,14 @@ def inscription():
 @is_logged_in
 def index():
     if session['role'] == 'ADMIN':
-        return render_template('admin/index.html')
+
+        etudiants = list(COLLECTION_USERS.find(
+            {'role': 'ETUDIANT'}).limit(3).sort("date_inscription", -1))
+        professeurs = list(COLLECTION_USERS.find(
+            {'role': 'PROFESSEUR'}).limit(3).sort("date_inscription", -1))
+        cours = list(COLLECTION_COURS.find())
+
+        return render_template('admin/index.html', etudiants=etudiants, professeurs=professeurs, cours=cours)
 
     if session['role'] == 'ETUDIANT':
 
@@ -149,13 +160,16 @@ def index():
     return render_template('index.html')
 
 
+######################################################################################
+# Partie ADMIN                                                                       #
+######################################################################################
 @app.route('/professeurs')
 @is_logged_in
 def professeurs_index():
     professeurs = list(COLLECTION_USERS.find({
         'role': 'PROFESSEUR'
     }))
-    return render_template('/professeurs/index.html', professeurs=professeurs)
+    return render_template('/admin/professeurs/index.html', professeurs=professeurs)
 
 
 @app.route('/professeurs/recherche', methods=['GET'])
@@ -167,25 +181,30 @@ def professeurs_recherche():
     professeurs = list(COLLECTION_USERS.find(
         {
             '$or': [
-                {'nom': {'$regex': mot_cle+'.*'}},
-                {'prenom': {'$regex': mot_cle+'.*'}}
+                {'nom_prenom': {'$regex': mot_cle+'.*', '$options': 'i'}}
             ],
             '$and': [
                 {'role': 'PROFESSEUR'}
             ]
         }
     ))
-    return render_template('/professeurs/resultat.html', professeurs=professeurs, mot_cle=mot_cle)
+    return render_template('/admin/professeurs/resultat.html', professeurs=professeurs, mot_cle=mot_cle)
 
 
 @app.route('/professeurs/details/<string:id>')
 @is_logged_in
 def professeurs_details(id):
-    professeur = COLLECTION_USERS.find_one({
-        '_id': ObjectId(id)
-    })
+    professeur = COLLECTION_USERS.find_one({'_id': ObjectId(id)})
+    competences = list(COLLECTION_COMPETENCES.find({'id_utilisateur': id}))
+    a_propos = COLLECTION_A_PROPOS.find_one({'id_utilisateur': id})
+    avis = list(COLLECTION_AVIS.find({'id_professeur': id}))
 
-    return render_template('/professeurs/details.html', professeur=professeur)
+    print(competences)
+    return render_template('/admin/professeurs/details.html',
+                           professeur=professeur,
+                           avis=avis,
+                           competences=competences,
+                           a_propos=a_propos)
 
 
 @app.route('/etudiants')
@@ -194,7 +213,7 @@ def etudiants_index():
     etudiants = list(COLLECTION_USERS.find({
         'role': 'ETUDIANT'
     }))
-    return render_template('/etudiants/index.html', etudiants=etudiants)
+    return render_template('/admin/etudiants/index.html', etudiants=etudiants)
 
 
 @app.route('/etudiants/recherche', methods=['GET'])
@@ -206,15 +225,14 @@ def etudiants_recherche():
     etudiants = list(COLLECTION_USERS.find(
         {
             '$or': [
-                {'nom': {'$regex': mot_cle+'.*'}},
-                {'prenom': {'$regex': mot_cle+'.*'}}
+                {'nom_prenom': {'$regex': mot_cle+'.*', '$options': 'i'}}
             ],
             '$and': [
                 {'role': 'ETUDIANT'}
             ]
         }
     ))
-    return render_template('/etudiants/resultat.html', etudiants=etudiants, mot_cle=mot_cle)
+    return render_template('/admin/etudiants/resultat.html', etudiants=etudiants, mot_cle=mot_cle)
 
 
 @app.route('/etudiants/details/<string:id>')
@@ -224,7 +242,21 @@ def etudiants_details(id):
         '_id': ObjectId(id)
     })
 
-    return render_template('/etudiants/details.html', etudiant=etudiant)
+    return render_template('/admin/etudiants/details.html', etudiant=etudiant)
+
+
+@app.route('/admin/profil')
+@is_logged_in
+def admin_profil():
+    return render_template('/admin/profil.html')
+######################################################################################
+# Partie                                                                             #
+######################################################################################
+
+
+######################################################################################
+# Partie                                                                             #
+######################################################################################
 
 
 @app.route('/profil')
@@ -539,10 +571,11 @@ def professeur_details(id):
         )
 
         note = 0
-        for item in avis:
-            note += int(item['avis'])
+        if avis:
+            for item in avis:
+                note += int(item['avis'])
 
-        note = note / len(avis)
+            note = note / len(avis)
 
         etudiants = list(
             COLLECTION_USERS.find({
@@ -585,21 +618,40 @@ def avis_ajouter(id):
         return redirect(url_for('professeur_details', id=id))
 
 
-
 def searchCategorie(cat, competences):
     for comp in competences:
-        
+
         if cat == comp['categorie']:
             return True
-    
+
     return False
 
-@app.route('/api/professeurs/<string:categories>/<string:horaires>/<string:langues>')
+
+@app.route('/api/professeurs/<int:categories>/<int:horaires>/<int:langues>')
 def api_professeurs(categories, horaires, langues):
 
+    etudiant = COLLECTION_USERS.find_one({
+        '_id': ObjectId(session['_id'])
+    })
+
+    #mon_horaire = etudiant['horaire']
+    mon_horaire = 0
+    horaires_filter = [
+        mon_horaire,
+        3,
+        7,
+        12
+    ]
+
+    langues_filter = [
+        'Arabe',
+        'Français',
+        'Anglais'
+    ]
+
     categories_filter = [
-        'Développement web', 
-        'Développement d\'applications mobiles', 
+        'Développement web',
+        'Développement d\'applications mobiles',
         'Langages de programmation',
         'Data science',
         'Bases de données'
@@ -613,10 +665,20 @@ def api_professeurs(categories, horaires, langues):
 
     professeurs = []
     for user in users:
-
-        a_propos = COLLECTION_A_PROPOS.find_one({
+        
+        apropos = COLLECTION_A_PROPOS.find_one({
             'id_utilisateur': str(user['_id'])
         })
+
+        if apropos:
+            apropos= {
+                '_id': str(apropos['_id']),
+                'describe_you': apropos['describe_you'],
+                'biographie': apropos['biographie'],
+            }
+        else:
+            apropos = {}
+ 
 
         results = list(
             COLLECTION_COMPETENCES.find({
@@ -627,59 +689,58 @@ def api_professeurs(categories, horaires, langues):
         for result in results:
             competence = {
                 '_id': str(result['_id']),
-                'categorie':result['categorie'],
-                'technologie':result['technologie'],
-                'annee_experience':result['annee_experience'],
-                'technologie_connexes':result['technologie_connexes'],
-                'experience_technologies':result['experience_technologie'],
+                'categorie': result['categorie'],
+                'technologie': result['technologie'],
+                'annee_experience': result['annee_experience'],
+                'technologie_connexes': result['technologie_connexes'],
+                'experience_technologies': result['experience_technologie'],
             }
             competences.append(competence)
-
+ 
         professeur = {
             '_id': str(user['_id']),
             'profil_pic': user['profil_pic'],
             'nom_prenom': user['nom_prenom'],
             'email': user['email'],
             'fuseau_horaire': user['fuseau_horaire'],
-            'langue': user['langue'],
-            'a_propos': {
-                '_id': str(a_propos['_id']),
-                'describe_you': a_propos['describe_you'],
-                'biographie': a_propos['biographie'],
-            },
+            'langue': user['langue'] ,
+            'a_propos':apropos,
             'competences': competences
         }
-        
-        if categories == '0' and langues == '0' and horaires == '0':
-            professeurs.append(professeur)
-        else:
-            if langues == '0':
-                
-                if categories != '0' and horaires == '0':
-                    cat = categories_filter[int(categories)-1]
+
+        if categories == 0:
+            if horaires == 0:
+                if langues == 0:
+                    professeurs.append(professeur)
+                elif langues != 0:
+                    if langues_filter[langues-1] == professeur['langue']:
+                        professeurs.append(professeur)
+            elif horaires != 0:
+                fuseau = int(professeur['fuseau_horaire'].split('+')[1])
+                if langues == 0:
+                    if horaires_filter[horaires-1] <= fuseau:
+                        professeurs.append(professeur)
+                elif langues != 0:
+                    if langues_filter[langues-1] == professeur['langue'] and horaires_filter[horaires-1] <= fuseau:
+                        professeurs.append(professeur)
+        elif categories != 0:
+            cat = categories_filter[int(categories)-1]
+            if horaires == 0:
+                if langues == 0:
                     if searchCategorie(cat, competences):
                         professeurs.append(professeur)
-                elif categories == '0' and horaires != '0':
-                    professeurs.append(professeur)
-                elif categories != '0' and horaires != '0':
-                    professeurs.append(professeur)
-            
-            elif categories == '0':
-                if langues != '0' and horaires == '0':
-                    professeurs.append(professeur)
-                elif langues == '0' and horaires != '0':
-                    professeurs.append(professeur)
-                elif langues != '0' and horaires != '0':
-                    professeurs.append(professeur)
-            
-            elif horaires == '0':
-                if langues != '0' and categories == '0':
-                    professeurs.append(professeur)
-                elif langues == '0' and categories != '0':
-                    professeurs.append(professeur)
-                elif langues != '0' and categories != '0':
-                    professeurs.append(professeur)
-    
+                elif langues != 0:
+                    if langues_filter[langues-1] == professeur['langue'] and searchCategorie(cat, competences):
+                        professeurs.append(professeur)
+            elif horaires != 0:
+                fuseau = int(professeur['fuseau_horaire'].split('+')[1])
+                if langues == 0:
+                    if horaires_filter[horaires-1] <= fuseau and searchCategorie(cat, competences):
+                        professeurs.append(professeur)
+                elif langues != 0:
+                    if langues_filter[langues-1] == professeur['langue'] and horaires_filter[horaires-1] <= fuseau and searchCategorie(cat, competences):
+                        professeurs.append(professeur)
+        
     return jsonify(professeurs)
 
 

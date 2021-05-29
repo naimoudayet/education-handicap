@@ -4,7 +4,7 @@
 
 
 {% block _search %}
-{% include "/professeurs/_search.html" %}
+{% include "/admin/professeurs/_search.html" %}
 {% endblock %}
 
 {% block page_header %}
@@ -17,8 +17,7 @@
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a href="/">Accueil</a></li>
-                    <li class="breadcrumb-item"><a href="/professeurs">Professeurs</a></li>
-                    <li class="breadcrumb-item active">Résultat</li>
+                    <li class="breadcrumb-item active">Professeurs</li>
                 </ol>
             </div><!-- /.col -->
         </div><!-- /.row -->
@@ -28,16 +27,6 @@
 
 {% block container %}
 <div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h4>Résultat du mot clé: {{ mot_cle }}</h4>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
     {% if professeurs %}
     {% for professeur in professeurs %}
     <div class="col-md-4">
@@ -46,15 +35,15 @@
             <!-- Add the bg color to the header using any of the bg-* classes -->
             <a href="/professeurs/details/{{ professeur['_id'] }}">
                 <div class="widget-user-header bg-info">
-                    <h3 class="widget-user-username">{{ professeur['nom'] }}
-                        {{ professeur['prenom'] }}</h3>
-                    <h5 class="widget-user-desc">{{ professeur['email'] }}</h5>
+                    <h3 class="widget-user-username">{{ professeur['nom_prenom'] }}</h3>
+                    <h6 class="widget-user-desc">{{ professeur['email'] }}</h6>
                 </div>
             </a>
 
             <a href="/professeurs/details/{{ professeur['_id'] }}">
                 <div class="widget-user-image">
-                    <img class="img-circle elevation-2" src="/static/img/{{ professeur['photo'] }}" alt="User Avatar">
+                    <img class="img-circle elevation-2" src="/static/img/{{ professeur['profil_pic'] }}"
+                        alt="User Avatar">
                 </div>
             </a>
 
@@ -62,15 +51,15 @@
                 <div class="row">
                     <div class="col-sm-6 border-right">
                         <div class="description-block">
-                            <h5 class="description-header">3,200</h5>
-                            <span class="description-text">Séances</span>
+                            <h5 class="description-header">0</h5>
+                            <span class="description-text">Cours</span>
                         </div>
                         <!-- /.description-block -->
                     </div>
                     <!-- /.col -->
                     <div class="col-sm-6">
                         <div class="description-block">
-                            <h5 class="description-header">13,000</h5>
+                            <h5 class="description-header">0</h5>
                             <span class="description-text">Avis</span>
                         </div>
                         <!-- /.description-block -->
@@ -85,7 +74,7 @@
     {% endfor %}
     {% else %}
     <div class="col-md-4">
-        <p class="text-danger">Aucun Professeurs.</p>
+        <p class="text-danger ml-2">Aucun Professeurs.</p>
     </div>
     {% endif %}
 </div>

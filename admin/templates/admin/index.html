@@ -20,5 +20,160 @@
 {% endblock  %}
 
 {% block container %}
+<div class="row">
+    <div class="col-lg-4 col-6">
+        <!-- small box -->
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{{ professeurs | length }}</h3>
 
-{% endblock %}
+                <p>Professeurs</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-person-add"></i>
+            </div>
+            <a href="/professeurs" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-lg-4 col-6">
+        <!-- small box -->
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{{ cours | length }}</h3>
+
+                <p>Cours</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-book-outline"></i>
+            </div>
+            <a href="/cours" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-lg-4 col-6">
+        <!-- small box -->
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ etudiants | length }}</h3>
+
+                <p>Étudiants</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-person-add"></i>
+            </div>
+            <a href="/etudiants" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+
+</div>
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Dernier inscription étudiant</h1>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    {% if etudiants %}
+    {% for etudiant in etudiants %}
+    <div class="col-md-4">
+        <!-- Widget: user widget style 1 -->
+        <div class="card card-widget widget-user">
+            <!-- Add the bg color to the header using any of the bg-* classes -->
+            <a href="/etudiants/details/{{ etudiant['_id'] }}">
+                <div class="widget-user-header bg-success">
+                    <h3 class="widget-user-username">{{ etudiant['nom_prenom'] }}</h3>
+                    <h6 class="widget-user-desc">{{ etudiant['email'] }}</h6>
+                </div>
+            </a>
+
+            <a href="/etudiants/details/{{ etudiant['_id'] }}">
+                <div class="widget-user-image">
+                    <img class="img-circle elevation-2" src="/static/img/{{ etudiant['profil_pic'] }}"
+                        alt="User Avatar">
+                </div>
+            </a>
+
+            <div class="card-footer">
+                <div class="row">
+
+                    <!-- /.col -->
+                </div>
+                <!-- /.row -->
+            </div>
+        </div>
+        <!-- /.widget-user -->
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-md-4">
+        <p class="text-danger">Aucun Etudiants.</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Dernier inscription professeurs</h1>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    {% if professeurs %}
+    {% for professeur in professeurs %}
+    <div class="col-md-4">
+        <!-- Widget: user widget style 1 -->
+        <div class="card card-widget widget-user">
+            <!-- Add the bg color to the header using any of the bg-* classes -->
+            <a href="/professeurs/details/{{ professeur['_id'] }}">
+                <div class="widget-user-header bg-info">
+                    <h3 class="widget-user-username">{{ professeur['nom_prenom'] }}</h3>
+                    <h6 class="widget-user-desc">{{ professeur['email'] }}</h6>
+                </div>
+            </a>
+
+            <a href="/professeurs/details/{{ professeur['_id'] }}">
+                <div class="widget-user-image">
+                    <img class="img-circle elevation-2" src="/static/img/{{ professeur['profil_pic'] }}"
+                        alt="User Avatar">
+                </div>
+            </a>
+
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-sm-6 border-right">
+                        <div class="description-block">
+                            <h5 class="description-header">0</h5>
+                            <span class="description-text">Cours</span>
+                        </div>
+                        <!-- /.description-block -->
+                    </div>
+                    <!-- /.col -->
+                    <div class="col-sm-6">
+                        <div class="description-block">
+                            <h5 class="description-header">0</h5>
+                            <span class="description-text">Avis</span>
+                        </div>
+                        <!-- /.description-block -->
+                    </div>
+                    <!-- /.col -->
+                </div>
+                <!-- /.row -->
+            </div>
+        </div>
+        <!-- /.widget-user -->
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-md-4">
+        <p class="text-danger ml-2">Aucun Professeurs.</p>
+    </div>
+    {% endif %}
+    {% endblock %}

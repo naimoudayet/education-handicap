@@ -4,7 +4,7 @@
 
 
 {% block _search %}
-{% include "/professeurs/_search.html" %}
+{% include "/admin/professeurs/_search.html" %}
 {% endblock %}
 
 {% block page_header %}
@@ -34,20 +34,20 @@
         <div class="card card-primary card-outline">
             <div class="card-body box-profile">
                 <div class="text-center">
-                    <img class="profile-user-img img-fluid img-circle" src="/static/img/{{ professeur['photo'] }}"
+                    <img class="profile-user-img img-fluid img-circle" src="/static/img/{{ professeur['profil_pic'] }}"
                         alt="User profile picture">
                 </div>
 
-                <h3 class="profile-username text-center">{{ professeur['nom'] }} {{ professeur['prenom'] }}</h3>
+                <h3 class="profile-username text-center">{{ professeur['nom_prenom'] }}</h3>
 
                 <p class="text-muted text-center">{{ professeur['email'] }}</p>
 
                 <ul class="list-group list-group-unbordered mb-3">
                     <li class="list-group-item">
-                        <b>Séances</b> <a class="float-right">543</a>
+                        <b>Séances</b> <a class="float-right">0</a>
                     </li>
                     <li class="list-group-item">
-                        <b>Avis</b> <a class="float-right">13,287</a>
+                        <b>Avis</b> <a class="float-right">0</a>
                     </li>
                 </ul>
 
@@ -67,21 +67,27 @@
                 <strong><i class="fas fa-clock mr-1"></i> Fuseau Horaire</strong>
 
                 <p class="text-muted">
-                    GMT+1
+                    {{ professeur['fuseau_horaire'] }}
                 </p>
 
                 <hr>
 
-                <strong><i class="fas fa-map-marker-alt mr-1"></i> Adresse</strong>
 
-                <p class="text-muted">Malibu, California</p>
+                <strong><i class="fas fa-calendar mr-1"></i> Date Inscription</strong>
+
+                <p class="text-muted">
+                    {{ professeur['date_inscription'] }}
+                </p>
 
                 <hr>
+
 
                 <strong><i class="fas fa-pencil-alt mr-1"></i> Compétences</strong>
 
                 <p class="text-muted">
-                    <span class="tag tag-info">Javascript</span>
+                    {% for competence in competences %}
+                    <span class="tag tag-info">{{ competence['technologie'] }}</span><br>
+                    {% endfor %}
                 </p>
 
             </div>
@@ -108,24 +114,18 @@
                         <div class="post">
                             <!-- /.user-block -->
                             <div class="row mb-3">
-                                <strong> Lorem ipsum represents a long-held tradition for designers</strong>
+                                <strong> {{ a_propos['describe_you'] }}</strong>
 
                                 <p class="mt-2">
-                                    Lorem ipsum represents a long-held tradition for designers,
-                                    typographers and the like. Some people hate it and argue for
-                                    its demise, but others ignore the hate as they create awesome
-                                    tools to help create filler text for everyone from bacon lovers
-                                    to Charlie Sheen fans.
+                                    {{ a_propos['biographie'] }}
                                 </p>
                             </div>
                             <!-- /.row -->
 
                             <p>
-                                <i class="fas fa-globe mr-1"></i> English
-                                <i class="far fa-clock ml-4"></i> Ville (timezone)
-                                <span class="float-right">
-                                    <i class="fab fa-stack-overflow mr-1"></i> URL
-                                </span>
+                                <i class="fas fa-globe mr-1"></i> {{ professeur['langue'] }}
+                                <i class="far fa-clock ml-4"></i> {{ professeur['fuseau_horaire'] }}
+
                             </p>
                         </div>
                         <!-- /.post -->
@@ -133,29 +133,33 @@
                     <!-- /.tab-pane -->
                     <div class="tab-pane" id="competences">
 
-                        <!-- The timeline -->
+                        {% for competence in competences %}
                         <div class="timeline timeline-inverse">
-
-                            <!-- timeline item -->
-                            <div>
-                                <i class="fab fa-js-square bg-primary"></i>
+                            <div class="mt-3">
+                                {% for technologie in technologies %}
+                                {% if competence['categorie'] == technologie['categorie'] %}
+                                {% for row in technologie['technologie'] %}
+                                {% if competence['technologie'] == row['nom'] %}
+                                <i class="fab fa-{{row['icon']}} bg-primary"></i>
+                                {% endif %}
+                                {% endfor %}
+                                {% endif %}
+                                {% endfor %}
 
                                 <div class="timeline-item">
-                                    <span class="time">17 ans d'expérience</span>
+                                    <span class="time">{{ competence['annee_experience'] }} ans
+                                        d'expérience</span>
 
-                                    <h3 class="timeline-header"><strong>Javascript</strong></h3>
+                                    <h3 class="timeline-header">
+                                        <strong>{{ competence['technologie'] }}</strong></h3>
 
                                     <div class="timeline-body">
-                                        Etsy doostang zoodles disqus groupon greplin oooj voxy zoodles,
-                                        weebly ning heekya handango imeem plugg dopplr jibjab, movity
-                                        jajah plickers sifteo edmodo ifttt zimbra. Babblely odeo kaboodle
-                                        quora plaxo ideeli hulu weebly balihoo...
+                                        {{ competence['experience_technologie'] }}
                                     </div>
                                 </div>
                             </div>
-                            <!-- END timeline item -->
-
                         </div>
+                        {% endfor %}
 
                     </div>
                     <!-- /.tab-pane -->
@@ -170,19 +174,54 @@
                                         <div class="col-12">
                                             <div class="row">
                                                 <div class="col-1">
-                                                    <h2 class="text-primary">3.0</h2>
+                                                    <h2 class="text-primary">{{ note }}</h2>
                                                 </div>
                                                 <div class="col-11">
                                                     <div class="float-left">
                                                         <span class="username">
+                                                            {% if note == 1 %}
+                                                            <i class="fas fa-star text-primary"></i>
+                                                            <i class="far fa-star"></i>
+                                                            <i class="far fa-star"></i>
+                                                            <i class="far fa-star"></i>
+                                                            <i class="far fa-star"></i>
+                                                            {% endif %}
+
+                                                            {% if note == 2 %}
+                                                            <i class="fas fa-star text-primary"></i>
+                                                            <i class="fas fa-star text-primary"></i>
+                                                            <i class="far fa-star"></i>
+                                                            <i class="far fa-star"></i>
+                                                            <i class="far fa-star"></i>
+                                                            {% endif %}
+
+                                                            {% if note == 3 %}
                                                             <i class="fas fa-star text-primary"></i>
                                                             <i class="fas fa-star text-primary"></i>
                                                             <i class="fas fa-star text-primary"></i>
                                                             <i class="far fa-star"></i>
                                                             <i class="far fa-star"></i>
+                                                            {% endif %}
+
+                                                            {% if note == 4 %}
+                                                            <i class="fas fa-star text-primary"></i>
+                                                            <i class="fas fa-star text-primary"></i>
+                                                            <i class="fas fa-star text-primary"></i>
+                                                            <i class="fas fa-star text-primary"></i>
+                                                            <i class="far fa-star"></i>
+                                                            {% endif %}
+
+                                                            {% if note ==5 %}
+                                                            <i class="fas fa-star text-primary"></i>
+                                                            <i class="fas fa-star text-primary"></i>
+                                                            <i class="fas fa-star text-primary"></i>
+                                                            <i class="fas fa-star text-primary"></i>
+                                                            <i class="fas fa-star text-primary"></i>
+                                                            {% endif %}
                                                         </span>
                                                         <br>
-                                                        <span class="description">(1409 commentaires)</span>
+                                                        <span class="description">({{ avis | length }}
+                                                            commentaires)</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -195,23 +234,45 @@
                             <!-- /.card-body -->
                             <div class="card-footer card-comments">
                                 <div class="card-comment">
+                                    {% if avis %}
+                                    {% for row in avis %}
                                     <!-- User image -->
-                                    <img class="img-circle img-sm" src="/static/img/user3-128x128.jpg" alt="User Image">
+                                    {% for etudiant in etudiants %}
+                                    {% if etudiant['_id'] | string == row['id_etudiant'] %}
+                                    <img class="img-circle img-sm" src="/static/img/{{ etudiant['profil_pic'] }}"
+                                        alt="User Image">
+                                    {% endif %}
+                                    {% endfor %}
+
 
                                     <div class="comment-text">
                                         <span class="username">
-                                            Maria Gonzales
-                                            <span class="text-muted float-right">8:03 PM Today</span>
+                                            {% for etudiant in etudiants %}
+                                            {% if etudiant['_id'] | string == row['id_etudiant'] %}
+                                            {{ etudiant['nom_prenom'] }}
+                                            {% endif %}
+                                            {% endfor %}
+                                            <span class="text-muted float-right">{{ row['date_heure'] }}</span>
                                         </span><!-- /.username -->
-                                        It is a long established fact that a reader will be distracted
-                                        by the readable content of a page when looking at its layout.
+                                        {{ row['commentaire'] }}
                                     </div>
                                     <!-- /.comment-text -->
+                                    {% endfor %}
+                                    {% else %}
+                                    <div class="comment-text">
+                                        <span class="username">
+                                                aucun avis
+                                        </span>
+                                    </div>
+                                    <!-- /.comment-text -->
+                                    {% endif %}
                                 </div>
-                                <!-- /.card-comment -->
+
                             </div>
+
                         </div>
                         <!-- /.card -->
+
 
                     </div>
                     <!-- /.tab-pane -->

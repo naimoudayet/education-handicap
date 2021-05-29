@@ -56,7 +56,6 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link" data-toggle="dropdown" href="#">
                         <i class="far fa-comments"></i>
-                        <span class="badge badge-danger navbar-badge">3</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                         <a href="#" class="dropdown-item">
@@ -127,9 +126,7 @@
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
             <a href="/" class="brand-link">
-                <img src="/static/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
-                    style="opacity: .8">
-                <span class="brand-text font-weight-light">APP NAME</span>
+                <span class="brand-text font-weight-light">Éducation Handicapés</span>
             </a>
 
             <!-- Sidebar -->
@@ -137,7 +134,8 @@
                 <!-- Sidebar user panel (optional) -->
                 <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                     <div class="image">
-                        <img src="/static/img/{{ session['profil_pic'] }}" class="img-circle elevation-2" alt="User Image">
+                        <img src="/static/img/{{ session['profil_pic'] }}" class="img-circle elevation-2"
+                            alt="User Image">
                     </div>
                     <div class="info">
                         <a href="/profil" class="d-block">
@@ -178,7 +176,7 @@
                             <a href="/etudiants" class="nav-link">
                                 <i class="nav-icon fas fa-user-graduate"></i>
                                 <p>
-                                    Etudiants
+                                    Étudiants
                                 </p>
                             </a>
                         </li>
@@ -190,9 +188,17 @@
                                 </p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="/messages" class="nav-link">
+                                <i class="nav-icon fas fa-comment"></i>
+                                <p>
+                                    Messages
+                                </p>
+                            </a>
+                        </li>
                         <li class="nav-header">Paramètres</li>
                         <li class="nav-item">
-                            <a href="/profil" class="nav-link">
+                            <a href="/admin/profil" class="nav-link">
                                 <i class="nav-icon fas fa-user"></i>
                                 <p>
                                     Profil

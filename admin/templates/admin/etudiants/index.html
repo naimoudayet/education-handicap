@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 
-{% block title %}Gestion des Etudiants{% endblock %}
+{% block title %}Gestion des Étudiants{% endblock %}
 
 
 {% block _search %}
-{% include "/etudiants/_search.html" %}
+{% include "/admin/etudiants/_search.html" %}
 {% endblock %}
 
 {% block page_header %}
@@ -12,12 +12,12 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1 class="m-0">Etudiants</h1>
+                <h1 class="m-0">Étudiants</h1>
             </div><!-- /.col -->
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a href="/">Accueil</a></li>
-                    <li class="breadcrumb-item active">Etudiants</li>
+                    <li class="breadcrumb-item active">Étudiants</li>
                 </ol>
             </div><!-- /.col -->
         </div><!-- /.row -->
@@ -35,9 +35,8 @@
             <!-- Add the bg color to the header using any of the bg-* classes -->
             <a href="/etudiants/details/{{ etudiant['_id'] }}">
                 <div class="widget-user-header bg-success">
-                    <h3 class="widget-user-username">{{ etudiant['nom'] }}
-                        {{ etudiant['prenom'] }}</h3>
-                    <h5 class="widget-user-desc">{{ etudiant['email'] }}</h5>
+                    <h3 class="widget-user-username">{{ etudiant['nom_prenom'] }}</h3>
+                    <h6 class="widget-user-desc">{{ etudiant['email'] }}</h6>
                 </div>
             </a>
 
@@ -49,21 +48,7 @@
 
             <div class="card-footer">
                 <div class="row">
-                    <div class="col-sm-6 border-right">
-                        <div class="description-block">
-                            <h5 class="description-header">3,200</h5>
-                            <span class="description-text">Séances</span>
-                        </div>
-                        <!-- /.description-block -->
-                    </div>
-                    <!-- /.col -->
-                    <div class="col-sm-6">
-                        <div class="description-block">
-                            <h5 class="description-header">13,000</h5>
-                            <span class="description-text">Avis</span>
-                        </div>
-                        <!-- /.description-block -->
-                    </div>
+                     
                     <!-- /.col -->
                 </div>
                 <!-- /.row -->
@@ -74,7 +59,7 @@
     {% endfor %}
     {% else %}
     <div class="col-md-4">
-        <p class="text-danger">Aucun Etudiants.</p>
+        <p class="text-danger">Aucun Étudiants.</p>
     </div>
     {% endif %}
 </div>
