@@ -26,25 +26,35 @@
                                                 <div class="form-group">
                                                     <div class="custom-control custom-radio">
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox">
+                                                            <input class="form-check-input" id="categories"
+                                                                name="categories" value="1" type="radio"
+                                                                onchange="applyFilter(this, 1);">
                                                             <label class="form-check-label">Développement web</label>
                                                         </div>
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox">
+                                                            <input class="form-check-input" id="categories"
+                                                                name="categories" value="2" type="radio"
+                                                                onchange="applyFilter(this, 1);">
                                                             <label class="form-check-label">Développement d'applications
                                                                 mobiles</label>
                                                         </div>
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox">
+                                                            <input class="form-check-input" id="categories"
+                                                                name="categories" value="3" type="radio"
+                                                                onchange="applyFilter(this, 1);">
                                                             <label class="form-check-label">Langages de
                                                                 programmation</label>
                                                         </div>
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox">
+                                                            <input class="form-check-input" id="categories"
+                                                                name="categories" value="4" type="radio"
+                                                                onchange="applyFilter(this, 1);">
                                                             <label class="form-check-label">Data science</label>
                                                         </div>
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox">
+                                                            <input class="form-check-input" id="categories"
+                                                                name="categories" value="5" type="radio"
+                                                                onchange="applyFilter(this, 1);">
                                                             <label class="form-check-label">Bases de données</label>
                                                         </div>
                                                     </div>
@@ -56,22 +66,30 @@
                                                 <div class="form-group">
                                                     <div class="custom-control custom-radio">
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox">
+                                                            <input class="form-check-input" id="horaires"
+                                                                name="horaires" value="1" type="radio"
+                                                                onchange="applyFilter(this, 2);">
                                                             <label class="form-check-label">Seulement dans votre fuseau
                                                                 horaire</label>
                                                         </div>
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox">
+                                                            <input class="form-check-input" id="horaires"
+                                                                name="horaires" value="2" type="radio"
+                                                                onchange="applyFilter(this, 2);">
                                                             <label class="form-check-label">± 3 heures de votre fuseau
                                                                 horaire</label>
                                                         </div>
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox">
+                                                            <input class="form-check-input" id="horaires"
+                                                                name="horaires" value="3" type="radio"
+                                                                onchange="applyFilter(this, 2);">
                                                             <label class="form-check-label">± 7 heures de votre fuseau
                                                                 horaire</label>
                                                         </div>
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox">
+                                                            <input class="form-check-input" id="horaires"
+                                                                name="horaires" value="4" type="radio"
+                                                                onchange="applyFilter(this, 2);">
                                                             <label class="form-check-label">± 12 heures de votre fuseau
                                                                 horaire</label>
                                                         </div>
@@ -83,15 +101,18 @@
                                                 <div class="form-group">
                                                     <div class="custom-control custom-radio">
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox">
+                                                            <input class="form-check-input" id="langues" name="langues"
+                                                                value="1" type="radio" onchange="applyFilter(this, 3);">
                                                             <label class="form-check-label">Arabe</label>
                                                         </div>
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox">
+                                                            <input class="form-check-input" id="langues" name="langues"
+                                                                value="2" type="radio" onchange="applyFilter(this, 3);">
                                                             <label class="form-check-label">Français</label>
                                                         </div>
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox">
+                                                            <input class="form-check-input" id="langues" name="langues"
+                                                                value="3" type="radio" onchange="applyFilter(this, 3);">
                                                             <label class="form-check-label">Anglais</label>
                                                         </div>
                                                     </div>
@@ -104,69 +125,7 @@
                                     <!-- /.card-body -->
                                 </div>
                             </div>
-                            <div class="col-8">
-                                {% if users %}
-                                {% for user in users %}
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="active tab-pane" id="activity">
-                                            <!-- Post -->
-                                            <div class="post">
-                                                <div class="user-block">
-                                                    <img class="img-circle img-bordered-sm"
-                                                        src="/static/img/{{ user['profil_pic'] }}" alt="user image">
-                                                    <span class="username">
-                                                        <a
-                                                            href="#">{{ user['nom_prenom'][0]|upper}}{{user['nom_prenom'][1:] }}</a>
-                                                        <span class="float-right">
-                                                            <a href="/professeur/{{ user['_id'] }}" class="btn btn-info">Voir Profil</a>
-                                                        </span>
-                                                    </span>
-                                                    <span class="description">{{ user['email'] }}</span>
-                                                </div>
-                                                <!-- /.user-block -->
-                                                <p>
-                                                    <span class="text-sm"><i class="fas fa-globe mr-1"></i>
-                                                        {{ user['langue'] }}</span>
-                                                    <span class="text-sm"><i class="far fa-clock ml-4"></i>
-                                                        {{ user['fuseau_horaire'] }}
-                                                    </span>
-
-                                                </p>
-                                                {% for row in a_propos %}
-                                                {% if row['id_utilisateur'] == user['_id']  | string %}
-                                                <b>{{ row['describe_you'] }}</b>
-                                                <p class="mt-3">{{ row['biographie'] }}</p>
-                                                {% endif %}
-                                                {% endfor %}
-
-                                                {% for competence in competences %}
-                                                {% if competence['id_utilisateur'] == user['_id']  | string %}
-                                                <small class="badge badge-dark mr-1">{{ competence['technologie'] }}</small>
-                                                {% endif %}
-                                                {% endfor %}
-
-                                            </div>
-                                            <!-- /.post -->
-                                        </div>
-                                    </div><!-- /.card-body -->
-                                </div>
-                                {% endfor %}
-                                {% else %}
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="active tab-pane" id="activity">
-                                            <!-- Post -->
-                                            <div class="post">
-                                                <p>
-                                                    Aucun Professeur
-                                                </p>
-                                            </div>
-                                            <!-- /.post -->
-                                        </div>
-                                    </div><!-- /.card-body -->
-                                </div>
-                                {% endif %}
+                            <div class="col-8" id="prof">
                             </div>
                         </div>
                     </div>
@@ -177,5 +136,126 @@
     </div>
     <div class="col-1"></div>
 </div>
+
+<script>
+    getProfesseurs(0, 0, 0);
+
+    function applyFilter(src, index) {
+
+        let filter_categorie, filter_horaire, filter_langue;
+
+        if (index == 1) {
+            filter_categorie = parseInt(src.value);
+            filter_horaire = parseInt(getChecked('input[name="horaires"]'));
+            filter_langue = parseInt(getChecked('input[name="langues"]'));
+        } else if (index == 2) {
+            filter_categorie = parseInt(getChecked('input[name="categories"]'));
+            filter_horaire = parseInt(src.value);
+            filter_langue = parseInt(getChecked('input[name="langues"]'));
+        } else if (index == 3) {
+            filter_categorie = parseInt(getChecked('input[name="categories"]'));
+            filter_horaire = parseInt(getChecked('input[name="horaires"]'));
+            filter_langue = parseInt(src.value);
+        }
+
+        filter_categorie = Number.isNaN(filter_categorie) ? 0 : filter_categorie;
+        filter_horaire = Number.isNaN(filter_horaire) ? 0 : filter_horaire;
+        filter_langue = Number.isNaN(filter_langue) ? 0 : filter_langue;
+  
+        getProfesseurs(filter_categorie, filter_horaire, filter_langue);
+
+    }
+
+
+    async function getProfesseurs(categories, horaires, langues) {
+
+        const prof = document.getElementById('prof');
+
+        const response = await fetch(`http://127.0.0.1:5000/api/professeurs/${categories}/${horaires}/${langues}`);
+        const data = await response.json();
+
+        let content = '';
+
+        if (data.length > 0) {
+            data.forEach(professeur => {
+
+                let competencesElements = '';
+                professeur.competences.forEach(competence => {
+                    competencesElements +=
+                        `
+                        <small class="badge badge-dark mr-1">${competence.technologie}</small>
+                        `;
+                });
+
+                content +=
+                    `
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="active tab-pane" id="activity">
+                                <!-- Post -->
+                                <div class="post">
+                                    <div class="user-block">
+                                        <img class="img-circle img-bordered-sm"
+                                            src="/static/img/${professeur.profil_pic}" alt="user image">
+                                        <span class="username">
+                                            <a href="#">${ professeur.nom_prenom }</a>
+                                            <span class="float-right">
+                                                <a href="/professeur/${ professeur._id }"
+                                                    class="btn btn-info">Voir Profil</a>
+                                            </span>
+                                        </span>
+                                        <span class="description">${ professeur.email }</span>
+                                    </div>
+                                    <!-- /.user-block -->
+                                    <p>
+                                        <span class="text-sm"><i class="fas fa-globe mr-1"></i>
+                                            ${ professeur.langue }</span>
+                                        <span class="text-sm"><i class="far fa-clock ml-4"></i>
+                                            ${ professeur.fuseau_horaire }
+                                        </span>
+                                    </p>
+                                    <p class="mt-3">${ professeur.a_propos.biographie }</p>
+                                    ${competencesElements}
+                                </div>
+                                <!-- /.post -->
+                            </div>
+                        </div><!-- /.card-body -->
+                    </div> 
+                    `;
+            });
+        } else {
+            content = `
+            <div class="card">
+                <div class="card-body">
+                    <div class="active tab-pane" id="activity">
+                        <!-- Post -->
+                        <div class="post">
+                            <p>
+                                Aucun Professeur
+                            </p>
+                        </div>
+                        <!-- /.post -->
+                    </div>
+                </div><!-- /.card-body -->
+            </div>
+            `;
+        }
+
+        prof.innerHTML = content;
+    }
+
+
+    function getChecked(name) {
+        const rbs = document.querySelectorAll(name);
+        let selectedValue;
+        for (const rb of rbs) {
+            if (rb.checked) {
+                selectedValue = rb.value;
+                break;
+            }
+        }
+        return selectedValue;
+    }
+</script>
 
 {% endblock  %}

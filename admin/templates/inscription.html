@@ -15,6 +15,12 @@
     <link rel="stylesheet" href="/static/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="/static/css/adminlte.min.css">
+
+    <style>
+        body {
+            background-image: url("/static/img/back_login.jpg");
+        }
+    </style>
 </head>
 
 <body class="hold-transition login-page">
@@ -36,20 +42,22 @@
                         <div class="row">
                             <div class="col-6">
                                 <div class="custom-control custom-radio">
-                                    <input class="custom-control-input" type="radio" name="role" id="professeur" value="professeur" checked>
+                                    <input class="custom-control-input" type="radio" name="role" id="professeur"
+                                        value="professeur" checked>
                                     <label for="professeur" class="custom-control-label"></label>Professeur</input>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="custom-control custom-radio">
-                                    <input class="custom-control-input" type="radio" name="role" id="etudiant" value="etudiant">
+                                    <input class="custom-control-input" type="radio" name="role" id="etudiant"
+                                        value="etudiant">
                                     <label for="etudiant" class="custom-control-label">Étudiant</label>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="input-group mb-3">
-                        <input value="test test" type="text" name="nom_prenom" class="form-control" placeholder="Nom et prénom *"
+                        <input type="text" name="nom_prenom" class="form-control" placeholder="Nom et prénom *"
                             required>
                         <div class="input-group-append">
                             <div class="input-group-text">
@@ -58,7 +66,7 @@
                         </div>
                     </div>
                     <div class="input-group mb-3">
-                        <input  value="test@gmail.com" type="email" name="email" class="form-control" placeholder="Email *" required>
+                        <input type="email" name="email" class="form-control" placeholder="Email *" required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-envelope"></span>
@@ -66,7 +74,7 @@
                         </div>
                     </div>
                     <div class="input-group mb-3">
-                        <input  value="testtest" type="password" name="mot_de_passe" class="form-control" placeholder="Mot de passe *"
+                        <input type="password" name="mot_de_passe" class="form-control" placeholder="Mot de passe *"
                             required>
                         <div class="input-group-append">
                             <div class="input-group-text">

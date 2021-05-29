@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash, redirect, url_for, session
+from flask import Flask, render_template, request, flash, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -583,6 +583,104 @@ def avis_ajouter(id):
             'date_heure': dt_string
         })
         return redirect(url_for('professeur_details', id=id))
+
+
+
+def searchCategorie(cat, competences):
+    for comp in competences:
+        
+        if cat == comp['categorie']:
+            return True
+    
+    return False
+
+@app.route('/api/professeurs/<string:categories>/<string:horaires>/<string:langues>')
+def api_professeurs(categories, horaires, langues):
+
+    categories_filter = [
+        'Développement web', 
+        'Développement d\'applications mobiles', 
+        'Langages de programmation',
+        'Data science',
+        'Bases de données'
+    ]
+
+    users = list(
+        COLLECTION_USERS.find({
+            'role': 'PROFESSEUR'
+        })
+    )
+
+    professeurs = []
+    for user in users:
+
+        a_propos = COLLECTION_A_PROPOS.find_one({
+            'id_utilisateur': str(user['_id'])
+        })
+
+        results = list(
+            COLLECTION_COMPETENCES.find({
+                'id_utilisateur': str(user['_id'])
+            })
+        )
+        competences = []
+        for result in results:
+            competence = {
+                '_id': str(result['_id']),
+                'categorie':result['categorie'],
+                'technologie':result['technologie'],
+                'annee_experience':result['annee_experience'],
+                'technologie_connexes':result['technologie_connexes'],
+                'experience_technologies':result['experience_technologie'],
+            }
+            competences.append(competence)
+
+        professeur = {
+            '_id': str(user['_id']),
+            'profil_pic': user['profil_pic'],
+            'nom_prenom': user['nom_prenom'],
+            'email': user['email'],
+            'fuseau_horaire': user['fuseau_horaire'],
+            'langue': user['langue'],
+            'a_propos': {
+                '_id': str(a_propos['_id']),
+                'describe_you': a_propos['describe_you'],
+                'biographie': a_propos['biographie'],
+            },
+            'competences': competences
+        }
+        
+        if categories == '0' and langues == '0' and horaires == '0':
+            professeurs.append(professeur)
+        else:
+            if langues == '0':
+                
+                if categories != '0' and horaires == '0':
+                    cat = categories_filter[int(categories)-1]
+                    if searchCategorie(cat, competences):
+                        professeurs.append(professeur)
+                elif categories == '0' and horaires != '0':
+                    professeurs.append(professeur)
+                elif categories != '0' and horaires != '0':
+                    professeurs.append(professeur)
+            
+            elif categories == '0':
+                if langues != '0' and horaires == '0':
+                    professeurs.append(professeur)
+                elif langues == '0' and horaires != '0':
+                    professeurs.append(professeur)
+                elif langues != '0' and horaires != '0':
+                    professeurs.append(professeur)
+            
+            elif horaires == '0':
+                if langues != '0' and categories == '0':
+                    professeurs.append(professeur)
+                elif langues == '0' and categories != '0':
+                    professeurs.append(professeur)
+                elif langues != '0' and categories != '0':
+                    professeurs.append(professeur)
+    
+    return jsonify(professeurs)
 
 
 @app.errorhandler(404)

@@ -35411,7 +35411,8 @@ a.close.disabled, a.disabled.mailbox-attachment-close {
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: #e9ecef;
+  background-image: url("/static/img/login.jpg");
+  background-repeat: no-repeat;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
