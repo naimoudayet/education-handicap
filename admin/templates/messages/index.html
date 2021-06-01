@@ -1,0 +1,81 @@
+{% extends "layout-2.html" %}
+
+{% block title %}
+Éducation pour Handicapés
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <!-- Default box -->
+        <div class="card card-solid  mt-5">
+            <div class="card-body pb-0">
+                <div class="row">
+                    {% if conversations %}
+                    {% for row in conversations %}
+                    <div class="col-12 col-sm-6 col-md-4 d-flex align-items-stretch flex-column">
+                        <div class="card bg-light d-flex flex-fill">
+                            <div class="card-body pt-5">
+                                <div class="row">
+                                    {% for user in users %}
+                                    {% if user['_id'] | string == row['id_receiver'] or user['_id'] | string == row['id_sender'] %}
+                                    <div class="col-7">
+                                        <h2 class="lead"><b>
+                                                {{ user['nom_prenom'] }}
+
+                                            </b></h2>
+                                        {% for item in apropos %}
+                                        {% if user['_id'] | string == item['id_utilisateur'] %}
+                                        <p class="text-muted text-sm"><b>A Propos: </b>
+                                            {{ item['describe_you'] }} </p>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="col-5 text-center">
+                                        <img src="/static/img/{{ user['profil_pic'] }}" alt="user-avatar"
+                                            class="img-circle img-fluid">
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="text-right">
+                                    {% if session['_id'] == row['id_sender'] %}
+                                    <a href="/messages/{{ row['id_receiver'] }}" class="btn btn-sm bg-teal">
+                                        <i class="fas fa-comments"></i> </a>
+                                    {% endif %}
+
+                                    {% if session['_id'] == row['id_receiver'] %}
+                                    <a href="/messages/{{ row['id_sender'] }}" class="btn btn-sm bg-teal">
+                                        <i class="fas fa-comments"></i> </a>
+                                    {% endif %}
+
+                                    <a href="/professeur/{{ row['id_receiver'] }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-user"></i> Voir Profil
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="col-12 col-sm-6 col-md-4 d-flex align-items-stretch flex-column">
+                        <div class="card bg-light d-flex flex-fill">
+                            <div class="card-body pt-5">
+                                <div class="row">
+                                    <p>Aucun Message</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock  %}

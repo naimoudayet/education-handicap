@@ -1,0 +1,122 @@
+{% extends "layout-2.html" %}
+
+{% block title %}
+Éducation pour Handicapés
+{% endblock %}
+
+{% block css %}
+<style>
+    .direct-chat-message {
+        -webkit-transform: translate(0, 0);
+        transform: translate(0, 0);
+        overflow: auto;
+        padding: 10px
+    }
+</style>
+{% endblock  %}
+
+{% block content %}
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <div class="card direct-chat direct-chat-primary mt-5">
+            <div class="card-header">
+                <h3 class="card-title">Message</h3>
+
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+                <div class="direct-chat-message">
+                    {% if conversation %}
+                    {% if conversation['id_sender'] == session['_id'] %}
+                    <div class="direct-chat-msg right">
+                        <div class="direct-chat-infos clearfix">
+                            <span class="direct-chat-name float-right">{{ session['nom_prenom'] }}</span>
+                            <span class="direct-chat-timestamp float-left">{{ conversation['date_creation'] }}</span>
+                        </div>
+                        <img class="direct-chat-img" src="/static/img/{{ session['profil_pic'] }}"
+                            alt="message user image">
+                        <div class="direct-chat-text">
+                            {{ conversation['message'] }}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="direct-chat-msg">
+                        {% for item in users %}
+                        {% if conversation['id_sender'] == item['_id'] | string %}
+                        <div class="direct-chat-infos clearfix">
+                            <span class="direct-chat-name float-left">{{ item['nom_prenom'] }}</span>
+                            <span class="direct-chat-timestamp float-right">{{ conversation['date_creation'] }}</span>
+                        </div>
+                        <img class="direct-chat-img" src="/static/img/{{ item['profil_pic'] }}"
+                            alt="message user image">
+                        {% endif %}
+                        {% endfor %}
+                        <div class="direct-chat-text">
+                            {{ conversation['message'] }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+
+
+                    {% for row in messages %}
+                    {% if row['id_user'] == session['_id'] %}
+                    <div class="direct-chat-msg right">
+                        <div class="direct-chat-infos clearfix">
+                            <span class="direct-chat-name float-right">{{ session['nom_prenom'] }}</span>
+                            <span class="direct-chat-timestamp float-left">{{ row['date_creation'] }}</span>
+                        </div>
+                        <img class="direct-chat-img" src="/static/img/{{ session['profil_pic'] }}"
+                            alt="message user image">
+                        <div class="direct-chat-text">
+                            {{ row['message'] }}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="direct-chat-msg">
+                        {% for item in users %}
+                        {% if row['id_user'] == item['_id'] | string %}
+                        <div class="direct-chat-infos clearfix">
+                            <span class="direct-chat-name float-left">{{ item['nom_prenom'] }}</span>
+                            <span class="direct-chat-timestamp float-right">{{ row['date_creation'] }}</span>
+                        </div>
+                        <img class="direct-chat-img" src="/static/img/{{ item['profil_pic'] }}"
+                            alt="message user image">
+                        {% endif %}
+                        {% endfor %}
+                        <div class="direct-chat-text">
+                            {{ row['message'] }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- /.card-body -->
+            <div class="card-footer">
+                {% if is_new == 0 %}
+                {% set id_convo = 0 %}
+                {% else %}
+                {% set id_convo = conversation['_id'] %}
+                {% endif %}
+                <form action="{{ url_for('messages_send', id=id, is_new=is_new, id_convo=id_convo) }}" method="post">
+                    <div class="input-group">
+                        <input type="text" name="message" placeholder="écrire un message..." class="form-control">
+                        <span class="input-group-append">
+                            <button type="submit" class="btn btn-primary">Envoyer</button>
+                        </span>
+                    </div>
+                </form>
+            </div>
+            <!-- /.card-footer-->
+        </div>
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock  %}

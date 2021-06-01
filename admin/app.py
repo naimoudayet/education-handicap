@@ -26,6 +26,8 @@ COLLECTION_A_PROPOS = DB['a_propos']
 COLLECTION_COMPETENCES = DB['competences']
 COLLECTION_AVIS = DB['avis']
 COLLECTION_COURS = DB['cours']
+COLLECTION_CONVERSATION = DB['conversations']
+COLLECTION_MESSAGES = DB['messages']
 
 app = Flask(__name__)
 app.debug = True
@@ -250,8 +252,49 @@ def etudiants_details(id):
 def admin_profil():
     return render_template('/admin/profil.html')
 ######################################################################################
-# Partie                                                                             #
+# Partie Etudiant                                                                    #
 ######################################################################################
+
+
+@app.route('/professeur/<string:id>')
+def professeur_details(id):
+    if ObjectId.is_valid(id):
+
+        user = COLLECTION_USERS.find_one({
+            '_id': ObjectId(id),
+            'role': 'PROFESSEUR'
+        })
+        competences = list(
+            COLLECTION_COMPETENCES.find({
+                'id_utilisateur': id
+            })
+        )
+        avis = list(
+            COLLECTION_AVIS.find({
+                'id_professeur': id
+            })
+        )
+
+        note = 0
+        if avis:
+            for item in avis:
+                note += int(item['avis'])
+
+            note = note / len(avis)
+
+        etudiants = list(
+            COLLECTION_USERS.find({
+                'role': 'ETUDIANT'
+            })
+        )
+        a_propos = COLLECTION_A_PROPOS.find_one({
+            'id_utilisateur': id
+        })
+        if user:
+            return render_template('professeur/index.html', note=note, technologies=technologies, professeur=user,
+                                   competences=competences, a_propos=a_propos, avis=avis, etudiants=etudiants)
+
+    return redirect(url_for('index'))
 
 
 ######################################################################################
@@ -551,47 +594,6 @@ def competence_supprimer(id):
     return redirect(url_for('profil_modifier'))
 
 
-@app.route('/professeur/<string:id>')
-def professeur_details(id):
-    if ObjectId.is_valid(id):
-
-        user = COLLECTION_USERS.find_one({
-            '_id': ObjectId(id),
-            'role': 'PROFESSEUR'
-        })
-        competences = list(
-            COLLECTION_COMPETENCES.find({
-                'id_utilisateur': id
-            })
-        )
-        avis = list(
-            COLLECTION_AVIS.find({
-                'id_professeur': id
-            })
-        )
-
-        note = 0
-        if avis:
-            for item in avis:
-                note += int(item['avis'])
-
-            note = note / len(avis)
-
-        etudiants = list(
-            COLLECTION_USERS.find({
-                'role': 'ETUDIANT'
-            })
-        )
-        a_propos = COLLECTION_A_PROPOS.find_one({
-            'id_utilisateur': id
-        })
-        if user:
-            return render_template('professeur/index.html', note=note, technologies=technologies, professeur=user,
-                                   competences=competences, a_propos=a_propos, avis=avis, etudiants=etudiants)
-
-    return redirect(url_for('index'))
-
-
 @app.route('/avis_ajouter/<string:id>', methods=['POST'])
 @is_logged_in
 def avis_ajouter(id):
@@ -665,20 +667,19 @@ def api_professeurs(categories, horaires, langues):
 
     professeurs = []
     for user in users:
-        
+
         apropos = COLLECTION_A_PROPOS.find_one({
             'id_utilisateur': str(user['_id'])
         })
 
         if apropos:
-            apropos= {
+            apropos = {
                 '_id': str(apropos['_id']),
                 'describe_you': apropos['describe_you'],
                 'biographie': apropos['biographie'],
             }
         else:
             apropos = {}
- 
 
         results = list(
             COLLECTION_COMPETENCES.find({
@@ -696,15 +697,15 @@ def api_professeurs(categories, horaires, langues):
                 'experience_technologies': result['experience_technologie'],
             }
             competences.append(competence)
- 
+
         professeur = {
             '_id': str(user['_id']),
             'profil_pic': user['profil_pic'],
             'nom_prenom': user['nom_prenom'],
             'email': user['email'],
             'fuseau_horaire': user['fuseau_horaire'],
-            'langue': user['langue'] ,
-            'a_propos':apropos,
+            'langue': user['langue'],
+            'a_propos': apropos,
             'competences': competences
         }
 
@@ -740,8 +741,168 @@ def api_professeurs(categories, horaires, langues):
                 elif langues != 0:
                     if langues_filter[langues-1] == professeur['langue'] and horaires_filter[horaires-1] <= fuseau and searchCategorie(cat, competences):
                         professeurs.append(professeur)
-        
+
     return jsonify(professeurs)
+
+
+@app.route('/cours')
+def cours():
+    id_professeur = session['_id']
+
+    cours = list(COLLECTION_COURS.find({
+        'id_professeur': id_professeur
+    }))
+
+    etudiants = list(COLLECTION_USERS.find({
+        'role': 'ETUDIANT'
+    }))
+
+    competences = list(COLLECTION_COMPETENCES.find({
+        'id_utilisateur': id_professeur
+    }))
+    return render_template('/cours/index.html', cours=cours, etudiants=etudiants, competences=competences)
+
+
+@app.route('/cours/ajouter', methods=['GET', 'POST'])
+def cours_ajouter():
+    id_professeur = session['_id']
+
+    etudiants = list(COLLECTION_USERS.find({
+        'role': 'ETUDIANT'
+    }))
+    competences = list(COLLECTION_COMPETENCES.find({
+        'id_utilisateur': id_professeur
+    }))
+
+    if request.method == 'POST':
+        module = request.form['module']
+        etudiant = request.form['etudiant']
+        date = request.form['date']
+        heure = request.form['heure']
+
+        result = COLLECTION_COURS.find_one({
+            'id_etudiant': etudiant,
+            'date': date,
+            'heure': heure
+        })
+
+        if result:
+            flash('cours déja ajouter', 'danger')
+            return render_template('/cours/ajouter.html', etudiants=etudiants, competences=competences)
+        else:
+            COLLECTION_COURS.insert_one({
+                'id_professeur': id_professeur,
+                'id_etudiant': etudiant,
+                'id_competence': module,
+                'date': date,
+                'heure': heure,
+                'date_creation': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            })
+
+            flash('cours ajouter', 'success')
+            return redirect(url_for('cours'))
+
+    return render_template('/cours/ajouter.html', etudiants=etudiants, competences=competences)
+
+
+@app.route('/messages')
+def messages_index():
+    id_user = session['_id']
+
+    conversations = list(COLLECTION_CONVERSATION.find({
+        '$or': [
+            {
+                'id_sender': id_user
+            },
+            {
+                'id_receiver': id_user
+            },
+        ]
+    }))
+
+    if session['role'] == 'ETUDIANT':
+
+        users = list(COLLECTION_USERS.find({
+            'role': 'PROFESSEUR'
+        }))
+        apropos = list(COLLECTION_A_PROPOS.find())
+    else:
+        users = list(COLLECTION_USERS.find({
+            'role': 'ETUDIANT'
+        }))
+        apropos = []
+    return render_template('/messages/index.html', conversations=conversations, users=users, apropos=apropos)
+
+
+@app.route('/messages/<string:id>')
+def messages_details(id):
+    id_user = session['_id']
+
+    conversation = COLLECTION_CONVERSATION.find_one({
+        '$or': [
+            {
+                '$and': [
+                    {'id_sender': id_user},
+                    {'id_receiver': id},
+                ]
+            },
+            {
+                '$and': [
+                    {'id_receiver': id_user},
+                    {'id_sender': id},
+                ]
+            }
+        ]
+    })
+
+    if conversation:
+        messages = list(COLLECTION_MESSAGES.find({
+            'id_conversation': str(conversation['_id'])
+        }))
+
+        if session['role'] == 'ETUDIANT':
+
+            users = list(COLLECTION_USERS.find({
+                'role': 'PROFESSEUR'
+            }))
+        else:
+            users = list(COLLECTION_USERS.find({
+                'role': 'ETUDIANT'
+            }))
+
+        is_new = len(conversation)
+    else:
+        messages = []
+        users = []
+        is_new = 0
+
+    return render_template('/messages/details.html',
+                           id=id, conversation=conversation, messages=messages, is_new=is_new, users=users)
+
+
+@app.route('/messages/send/<string:id>/<int:is_new>/<string:id_convo>', methods=['POST'])
+def messages_send(id, is_new, id_convo):
+
+    id_sender = session['_id']
+    message = request.form['message']
+
+    if is_new == 0:
+        # create new convo
+        COLLECTION_CONVERSATION.insert_one({
+            'id_sender': id_sender,
+            'id_receiver': id,
+            'message': message,
+            'date_creation': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
+    else:
+        COLLECTION_MESSAGES.insert_one({
+            'id_conversation': id_convo,
+            'id_user': id_sender,
+            'message': message,
+            'date_creation': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
+
+    return redirect(url_for('messages_details', id=id))
 
 
 @app.errorhandler(404)

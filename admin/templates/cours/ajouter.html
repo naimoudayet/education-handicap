@@ -1,0 +1,59 @@
+{% extends "layout-2.html" %}
+
+{% block title %}
+Éducation pour Handicapés
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <div class="row mt-5">
+            <div class="col-6 ml-auto mr-auto ">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Ajouter Cours</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <form action="" method="POST">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="module">Module</label>
+                                <select name="module" class="form-control">
+                                    <option value="">Choisir un module</option>
+                                    {% for row in competences %}
+                                    <option value="{{ row['_id'] }}">{{ row['technologie'] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="etudiant">Etudiants</label>
+                                <select name="etudiant" class="form-control">
+                                    <option value="">Choisir un étudiant</option>
+                                    {% for row in etudiants %}
+                                    <option value="{{ row['_id'] }}">{{ row['nom_prenom'] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="date">Date</label>
+                                <input type="date" class="form-control" name="date" placeholder="date">
+                            </div>
+                            <div class="form-group">
+                                <label for="heure">Heure</label>
+                                <input type="time" class="form-control" name="heure" placeholder="heure">
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">Ajouter</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock  %}
