@@ -76,7 +76,7 @@
                 <strong><i class="fas fa-calendar mr-1"></i> Date Inscription</strong>
 
                 <p class="text-muted">
-                    {{ professeur['date_inscription'] }}
+                    {{ (professeur['date_inscription'] | string)[:19] }}
                 </p>
 
                 <hr>

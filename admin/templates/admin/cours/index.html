@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+
+{% block title %}Gestion des Cours{% endblock %}
+
+
+
+{% block page_header %}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Cours</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/">Accueil</a></li>
+                    <li class="breadcrumb-item active">Cours</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+{% endblock  %}
+
+{% block container %}
+<div class="row">
+    {% if cours %}
+    {% for item in cours %}
+    <div class="col-md-6">
+        <!-- Widget: user widget style 2 -->
+        <div class="card card-widget widget-user-2">
+            <div class="widget-user-header bg-primary">
+                <div class="row">
+                    <div class="col-6">
+                        {% for row in users %}
+                        {% if item['id_professeur'] == row['_id'] | string %}
+
+                        <div class="widget-user-image">
+                            <img class="img-circle elevation-2" src="/static/img/{{ row['profil_pic'] }}"
+                                alt="User Avatar">
+                        </div>
+                        <!-- /.widget-user-image -->
+                        <h5 class="widget-user-username">{{ row['nom_prenom'] }}</h5>
+
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="col-6">
+                        {% for row in users %}
+                        {% if item['id_etudiant'] == row['_id'] | string %}
+
+                        <div class="widget-user-image">
+                            <img class="img-circle elevation-2" src="/static/img/{{ row['profil_pic'] }}"
+                                alt="User Avatar">
+                        </div>
+                        <!-- /.widget-user-image -->
+                        <h5 class="widget-user-username">{{ row['nom_prenom'] }}</h5>
+
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer p-0">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <div class="nav-link">
+                            Module: <span class="float-right badge bg-primary">
+                                {% for row in competences %}
+                                {% if item['id_competence'] == row['_id'] | string %}
+                                    {{ row['technologie'] }}
+                                {% endif %}
+                                {% endfor %}
+                            </span>
+                        </div>
+                    </li> 
+                    <li class="nav-item">
+                        <div class="nav-link">
+                            Date: <span class="float-right badge bg-primary">{{ item['date'] }}</span>
+                        </div>
+                    </li> 
+                    <li class="nav-item">
+                        <div class="nav-link">
+                            Heure: <span class="float-right badge bg-primary">{{ item['heure'] }}</span>
+                        </div>
+                    </li> 
+                    <li class="nav-item">
+                        <div class="text-center">
+                            <a href="/admin/cours/details/{{ item['_id'] }}">voir détails</a>
+                        </div>
+                    </li> 
+                </ul>
+            </div>
+        </div>
+        <!-- /.widget-user -->
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-md-4">
+        <p class="text-danger">Aucun Cours.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

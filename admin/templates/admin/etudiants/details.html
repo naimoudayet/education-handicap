@@ -80,7 +80,7 @@
                 <strong><i class="fas fa-calendar mr-1"></i> Date Inscription</strong>
 
                 <p class="text-muted">
-                    {{ etudiant['date_inscription'] }}
+                    {{ (etudiant['date_inscription'] | string)[:19] }}
                 </p>
 
 
@@ -117,15 +117,6 @@
                                     to Charlie Sheen fans.
                                 </p>
                             </div>
-                            <!-- /.row -->
-
-                            <p>
-                                <i class="fas fa-globe mr-1"></i> English
-                                <i class="far fa-clock ml-4"></i> Ville (timezone)
-                                <span class="float-right">
-                                    <i class="fab fa-stack-overflow mr-1"></i> URL
-                                </span>
-                            </p>
                         </div>
                     </div>
                 </div>

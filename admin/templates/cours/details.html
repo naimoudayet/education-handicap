@@ -1,0 +1,256 @@
+{% extends "layout-2.html" %}
+
+{% block title %}
+Éducation pour Handicapés
+{% endblock %}
+
+{% block css %}
+<style>
+   
+    #root:not(.withChat) {
+        display: block;
+        width: 100%;
+        height: 100%;
+        margin-top: 20px;
+    }
+
+    #root.withChat {
+        display: grid;
+        grid-template-columns: 75% 25%;
+        height: 100%;
+        margin-top: 20px;
+    }
+
+    /* video section */
+
+    .container_video {
+        width: calc(100% - 5px);
+        height: 100%;
+        padding-right: 5px;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+    }
+
+    .participant {
+        margin-bottom: 10px;
+        margin-right: 5px;
+        display: grid;
+        grid-template-rows: auto 20px;
+    }
+
+    .participant div {
+        text-align: center;
+    }
+
+    .participant div video {
+        background-color: #eee;
+        border: 1px solid black;
+    }
+
+    .participant div video:not(.trackZoomed) {
+        width: 240px;
+        height: 180px;
+    }
+
+    .participant .label {
+        background-color: #007bff;
+        color: white;
+        height: 30px;
+        padding: 2px; 
+    }
+
+    .participantZoomed {
+        width: 100%;
+        height: calc(100% - 5px);
+        grid-template-rows: auto 30px;
+    }
+
+    .participantHidden {
+        display: none;
+    }
+
+    .trackZoomed {
+        width: 100%;
+        height: 100%;
+    }
+
+    .participantZoomed div video:not(.trackZoomed) {
+        display: none;
+    }
+
+    .participantHidden div video {
+        display: none;
+    }
+
+    .participantHidden .label {
+        display: none;
+    }
+
+    .participantZoomed .label {
+        margin-top: 8px;
+    }
+
+    /* chat section */
+
+    #root.withChat #chat {
+        width: calc(100% - 10px);
+        display: grid;
+        grid-template-rows: auto 30px;
+        border-left: 1px solid black;
+        padding: 5px;
+    }
+
+    #root:not(withChat) #chat {
+        display: none;
+    }
+
+    #chat #chat-scroll {
+        overflow: auto;
+    }
+
+    #chat #chat-content {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        line-height: 1em;
+        max-height: 1px;
+    }
+</style>
+{% endblock %}
+
+{% block content_header %}
+<div class="container">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Cours</h1>
+                </div><!-- /.col -->
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/">Accueil</a></li>
+                        <li class="breadcrumb-item active">Cours</li>
+                    </ol>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </div>
+</div>
+{% endblock  %}
+
+{% block content %}
+<input value="Etudiant" type="hidden" id="role"></span>
+<div class="container">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="card card-primary card-outline">
+
+                <div class="card-body">
+                    <div class="tab-content">
+                        <div class="active tab-pane" id="a_propos">
+
+                            <form>
+                                <input value="{{ session['_id'] }}" readonly type="hidden" name="”username”" id="username">
+                                <button id="join_leave" class="btn btn-success">Join call</button>
+                                <button id="share_screen" class="btn btn-dark" disabled>Share screen</button>
+                                <button id="toggle_chat" class="btn btn-dark" disabled>Toggle chat</button>
+                            </form>
+                            <p id="count">Disconnected.</p>
+                            <div id="root">
+                                <div id="container" class="container_video">
+                                    <div id="local" class="participant">
+                                        <div id="video_1"></div>
+                                        <div class="label">{{ session['nom_prenom'] }}</div>
+                                    </div>
+                                    <!-- more participants will be added dynamically here -->
+                                </div>
+                                <div id="chat">
+                                    <div id="chat-scroll">
+                                        <div id="chat-content">
+                                            <!-- chat content will be added dynamically here -->
+                                        </div>
+                                    </div>
+                                    <input id="chat-input" type="text">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% for row in etudiants %}
+        {% if cours['id_etudiant'] == row['_id'] | string %}
+        <div class="col-md-3">
+
+            <!-- Profile Image -->
+            <div class="card card-primary card-outline">
+                <div class="card-body box-profile">
+                    <div class="text-center">
+                        <img class="profile-user-img img-fluid img-circle" src="/static/img/{{ row['profil_pic'] }}"
+                            alt="User profile picture">
+                    </div>
+
+                    <h3 class="profile-username text-center"> {{ row['nom_prenom'] }} </h3>
+
+                    <p class="text-muted text-center"> {{ row['email'] }} </p>
+
+                    <ul class="list-group list-group-unbordered mb-3">
+
+                    </ul>
+
+                </div>
+                <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+
+            <!-- About Me Box -->
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Cours</h3>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+
+                    <strong><i class="fas fa-calendar mr-3"></i> Heure: </strong>
+                    <p class="text-muted ml-3">
+                        {{ cours['date'] }}
+                    </p>
+
+                    <strong><i class="fas fa-clock mr-3"></i> Heure: </strong>
+                    <p class="text-muted ml-3">
+                        {{ cours['heure'] }}
+                    </p>
+
+                    <strong><i class="fas fa-code mr-3"></i> Module: </strong>
+                    <p class="text-muted ml-3">
+                        {% for row in competences %}
+                        {% if cours['id_competence'] == row['_id'] | string %}
+                        {{ row['technologie'] }}
+                        {% endif %}
+                        {% endfor %}
+                    </p>
+
+                    <strong><i class="fas fa-hourglass-half mr-3"></i> Date Creation: </strong>
+                    <p class="text-muted ml-3">
+                        {{ cours['date_creation'] }}
+                    </p>
+                </div>
+                <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock  %}
+
+{% block js %}
+<script src="https://media.twiliocdn.com/sdk/js/video/releases/2.3.0/twilio-video.min.js"></script>
+<script src="https://media.twiliocdn.com/sdk/js/conversations/releases/1.0.0/twilio-conversations.min.js"></script>
+<script src="/static/twilio/main.js"></script>
+<script>
+
+</script>
+{% endblock  %}

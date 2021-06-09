@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+
+{% block title %}Gestion des Messages{% endblock %}
+
+
+
+{% block page_header %}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Messages</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/">Accueil</a></li>
+                    <li class="breadcrumb-item active">Messages</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+{% endblock  %}
+
+{% block container %}
+{% include "_error_msg.html" %}
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card card-primary card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">Boite Réception</h3>
+
+                    <div class="card-tools">
+                        <div class="input-group input-group-sm">
+                            <a href="/admin/messages/ajouter" class="btn btn-primary btn-block mb-3">Compose</a>
+                        </div>
+                    </div>
+                    <!-- /.card-tools -->
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body p-0">
+
+                    <div class="table-responsive mailbox-messages">
+                        <table class="table table-hover table-striped">
+                            <tbody>
+                                {% for conversation in conversations %}
+                                <tr>
+                                    <td class="mailbox-name" style="width: 30%;"><a href="/admin/messages/details/{{ conversation['_id'] }}">
+
+                                            {% if conversation['id_sender'] == session['_id'] %}
+                                            {% for user in users %}
+                                            {% if user['_id'] | string == conversation['id_receiver'] %}
+                                            {{ user['nom_prenom'] }}
+                                            {% endif %}
+                                            {% endfor %}
+                                            {% else %}
+                                            {% for user in users %}
+                                            {% if user['_id'] | string == conversation['id_sender'] %}
+                                            {{ user['nom_prenom'] }}
+                                            {% endif %}
+                                            {% endfor %}
+                                            {% endif %}
+                                        </a></td>
+                                    <td class="mailbox-subject"  style="width: 50%;"><b>{{ conversation['sujet'] }}</b> -
+                                        {{ conversation['message'][:50] }}...
+                                    </td>
+                                    <td class="mailbox-date"  style="width: 20%;">{{ conversation['date_creation']}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- /.table -->
+                    </div>
+                    <!-- /.mail-box-messages -->
+                </div>
+            </div>
+            <!-- /.card -->
+        </div>
+        <!-- /.col -->
+    </div>
+    <!-- /.row -->
+</section>
+<!-- /.content -->
+{% endblock %}

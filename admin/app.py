@@ -3,8 +3,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from bson.objectid import ObjectId
 from datetime import datetime
 
+from dotenv import load_dotenv
+from flask import Flask, render_template, request, abort
+from twilio.jwt.access_token import AccessToken
+from twilio.jwt.access_token.grants import VideoGrant, ChatGrant
+from twilio.rest import Client
+from twilio.base.exceptions import TwilioRestException
+
 import os
 import pymongo
+
+load_dotenv()
+twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
+twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
+twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
+                       twilio_account_sid)
 
 from functools import wraps
 
@@ -33,9 +47,17 @@ app = Flask(__name__)
 app.debug = True
 app.secret_key = 'MY_APP'
 
+def get_chatroom(name):
+    for conversation in twilio_client.conversations.conversations.list():
+        if conversation.friendly_name == name:
+            return conversation
+
+    # a conversation with the given name does not exist ==> create a new one
+    return twilio_client.conversations.conversations.create(
+        friendly_name=name)
+
+
 # Check if user logged in
-
-
 def is_logged_in(f):
     @wraps(f)
     def wrap(*args, **kwargs):
@@ -159,13 +181,16 @@ def index():
 
         return render_template('etudiant/index.html', users=users, competences=competences, a_propos=a_propos)
 
+    if session['role'] == 'PROFESSEUR':
+        return render_template('index.html')
+
     return render_template('index.html')
 
 
 ######################################################################################
 # Partie ADMIN                                                                       #
 ######################################################################################
-@app.route('/professeurs')
+@app.route('/admin/professeurs')
 @is_logged_in
 def professeurs_index():
     professeurs = list(COLLECTION_USERS.find({
@@ -174,7 +199,7 @@ def professeurs_index():
     return render_template('/admin/professeurs/index.html', professeurs=professeurs)
 
 
-@app.route('/professeurs/recherche', methods=['GET'])
+@app.route('/admin/professeurs/recherche', methods=['GET'])
 @is_logged_in
 def professeurs_recherche():
 
@@ -193,7 +218,7 @@ def professeurs_recherche():
     return render_template('/admin/professeurs/resultat.html', professeurs=professeurs, mot_cle=mot_cle)
 
 
-@app.route('/professeurs/details/<string:id>')
+@app.route('/admin/professeurs/details/<string:id>')
 @is_logged_in
 def professeurs_details(id):
     professeur = COLLECTION_USERS.find_one({'_id': ObjectId(id)})
@@ -209,7 +234,7 @@ def professeurs_details(id):
                            a_propos=a_propos)
 
 
-@app.route('/etudiants')
+@app.route('/admin/etudiants')
 @is_logged_in
 def etudiants_index():
     etudiants = list(COLLECTION_USERS.find({
@@ -218,7 +243,7 @@ def etudiants_index():
     return render_template('/admin/etudiants/index.html', etudiants=etudiants)
 
 
-@app.route('/etudiants/recherche', methods=['GET'])
+@app.route('/admin/etudiants/recherche', methods=['GET'])
 @is_logged_in
 def etudiants_recherche():
 
@@ -237,7 +262,7 @@ def etudiants_recherche():
     return render_template('/admin/etudiants/resultat.html', etudiants=etudiants, mot_cle=mot_cle)
 
 
-@app.route('/etudiants/details/<string:id>')
+@app.route('/admin/etudiants/details/<string:id>')
 @is_logged_in
 def etudiants_details(id):
     etudiant = COLLECTION_USERS.find_one({
@@ -247,10 +272,109 @@ def etudiants_details(id):
     return render_template('/admin/etudiants/details.html', etudiant=etudiant)
 
 
+@app.route('/admin/cours')
+@is_logged_in
+def admin_cours_index():
+    cours = list(COLLECTION_COURS.find().sort('date_creation', -1))
+    users = list(COLLECTION_USERS.find())
+    competences = list(COLLECTION_COMPETENCES.find())
+    return render_template('/admin/cours/index.html', cours=cours, users=users, competences=competences)
+
+
+@app.route('/admin/cours/details/<string:id>')
+@is_logged_in
+def admin_cours_details(id):
+    if ObjectId.is_valid(id):
+        users = list(COLLECTION_USERS.find())
+        competences = list(COLLECTION_COMPETENCES.find())
+        cours = COLLECTION_COURS.find_one({
+            '_id': ObjectId(id)
+        })
+        if cours:
+            return render_template('/admin/cours/details.html', cours=cours, users=users, competences=competences)
+
+    return redirect(url_for('cours_index'))
+
+
+@app.route('/admin/messages')
+@is_logged_in
+def admin_messages_index():
+    id_user = session['_id']
+    conversations = list(COLLECTION_CONVERSATION.find({
+        '$or': [
+            {
+                'id_sender': id_user
+            },
+            {
+                'id_receiver': id_user
+            },
+        ]
+    }))
+    users = list(COLLECTION_USERS.find({
+        '_id': {'$ne': ObjectId(id_user)}
+    }))
+    return render_template('/admin/messages/index.html', users=users, conversations=conversations)
+
+
+@app.route('/admin/messages/details/<string:id>')
+@is_logged_in
+def admin_messages_details(id):
+    conversation = COLLECTION_CONVERSATION.find_one({
+        '_id': ObjectId(id)
+    })
+    messages = list(COLLECTION_MESSAGES.find({
+        'id_conversation': id
+    })) 
+    users = list(COLLECTION_USERS.find())
+    return render_template('/admin/messages/details.html', users=users, conversation=conversation, messages=messages)
+
+
+@app.route('/admin/messages/ajouter', methods=['GET', 'POST'])
+@is_logged_in
+def admin_messages_ajouter():
+    id_user = session['_id']
+    users = list(COLLECTION_USERS.find({
+        '_id': {'$ne': ObjectId(id_user)}
+    }))
+    if request.method == 'POST':
+        user = request.form['user']
+        sujet = request.form['sujet']
+        message = request.form['message']
+
+        COLLECTION_CONVERSATION.insert_one({
+            'id_sender': id_user,
+            'id_receiver': user,
+            'sujet': sujet,
+            'message': message,
+            'date_creation': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
+        flash('message envoyer', 'success')
+        return redirect(url_for('admin_messages_index'))
+    return render_template('/admin/messages/ajouter.html', users=users)
+
+
+@app.route('/admin/messages/repondre/<string:id>', methods=['POST'])
+@is_logged_in
+def admin_messages_repondre(id):
+    if ObjectId.is_valid(id):
+        id_user = session['_id']
+
+        message = request.form['message']
+        COLLECTION_MESSAGES.insert_one({
+            'id_conversation': id,
+            'id_user': id_user,
+            'message': message,
+            'date_creation': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
+        return redirect(url_for('admin_messages_details', id=id))
+
+
 @app.route('/admin/profil')
 @is_logged_in
 def admin_profil():
     return render_template('/admin/profil.html')
+
+
 ######################################################################################
 # Partie Etudiant                                                                    #
 ######################################################################################
@@ -763,6 +887,50 @@ def cours():
     return render_template('/cours/index.html', cours=cours, etudiants=etudiants, competences=competences)
 
 
+@app.route('/cours/details/<string:id>')
+def cours_details(id):
+    if ObjectId.is_valid(id):
+
+        id_professeur = session['_id']
+        cours = COLLECTION_COURS.find_one({
+            '_id': ObjectId(id)
+        })
+
+        if cours:
+            etudiants = list(COLLECTION_USERS.find({
+                'role': 'ETUDIANT'
+            }))
+
+            competences = list(COLLECTION_COMPETENCES.find({
+                'id_utilisateur': id_professeur
+            }))
+            return render_template('/cours/details.html', cours=cours, etudiants=etudiants, competences=competences)
+    
+    return redirect(url_for('cours'))
+
+@app.route('/cours_login', methods=['POST'])
+def cours_login():
+    username = request.get_json(force=True).get('username')
+    if not username:
+        abort(401)
+
+    conversation = get_chatroom('My Room')
+    try:
+        conversation.participants.create(identity=username)
+    except TwilioRestException as exc:
+        # do not error if the user is already in the conversation
+        if exc.status != 409:
+            raise
+
+    token = AccessToken(twilio_account_sid, twilio_api_key_sid,
+                        twilio_api_key_secret, identity=username)
+    token.add_grant(VideoGrant(room='My Room'))
+    token.add_grant(ChatGrant(service_sid=conversation.chat_service_sid))
+
+    return {'token': token.to_jwt().decode(),
+            'conversation_sid': conversation.sid}
+
+
 @app.route('/cours/ajouter', methods=['GET', 'POST'])
 def cours_ajouter():
     id_professeur = session['_id']
@@ -905,10 +1073,46 @@ def messages_send(id, is_new, id_convo):
     return redirect(url_for('messages_details', id=id))
 
 
+@app.route('/etudiant/cours')
+def etudiant_cours():
+    id_etudiant = session['_id']
+
+    cours = list(COLLECTION_COURS.find({
+        'id_etudiant': id_etudiant
+    }))
+
+    professeurs = list(COLLECTION_USERS.find({
+        'role': 'PROFESSEUR'
+    }))
+
+    competences = list(COLLECTION_COMPETENCES.find())
+    return render_template('/etudiant/cours/index.html', cours=cours, professeurs=professeurs, competences=competences)
+
+
+@app.route('/etudiant/cours/details/<string:id>')
+def etudiant_cours_details(id):
+    if ObjectId.is_valid(id):
+ 
+        cours = COLLECTION_COURS.find_one({
+            '_id': ObjectId(id)
+        })
+
+        if cours:
+            professeur = COLLECTION_USERS.find_one({
+                 '_id': ObjectId( cours['id_professeur'])
+            })
+
+            competence = COLLECTION_COMPETENCES.find_one({
+                '_id': ObjectId( cours['id_competence'])
+            })
+            return render_template('/etudiant/cours/details.html', cours=cours, professeur=professeur, competence=competence)
+    
+    return redirect(url_for('etudiant_cours'))
+
 @app.errorhandler(404)
 def page_not_found(error):
     return render_template('error.html'), 404
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(ssl_context=('cert.pem', 'key.pem'), host='0.0.0.0')

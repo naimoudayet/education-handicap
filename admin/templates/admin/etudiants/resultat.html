@@ -44,14 +44,14 @@
         <!-- Widget: user widget style 1 -->
         <div class="card card-widget widget-user">
             <!-- Add the bg color to the header using any of the bg-* classes -->
-            <a href="/etudiants/details/{{ etudiant['_id'] }}">
+            <a href="/admin/etudiants/details/{{ etudiant['_id'] }}">
                 <div class="widget-user-header bg-success">
                     <h3 class="widget-user-username">{{ etudiant['nom_prenom'] }}</h3>
                     <h6 class="widget-user-desc">{{ etudiant['email'] }}</h6>
                 </div>
             </a>
 
-            <a href="/etudiants/details/{{ etudiant['_id'] }}">
+            <a href="/admin/etudiants/details/{{ etudiant['_id'] }}">
                 <div class="widget-user-image">
                     <img class="img-circle elevation-2" src="/static/img/{{ etudiant['profil_pic'] }}"
                         alt="User Avatar">

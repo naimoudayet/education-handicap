@@ -1,0 +1,132 @@
+{% extends "layout.html" %}
+
+{% block title %}Gestion des Messages{% endblock %}
+
+
+{% block page_header %}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Messages</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="/">Messages</a></li>
+                    <li class="breadcrumb-item active">Détails</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+{% endblock  %}
+
+{% block container %}
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Message</h3>
+
+                        <div class="card-tools">
+                            <a href="/admin/messages" class="btn btn-primary btn-block mb-3">Retour</a>
+                        </div>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body p-0">
+                        <div class="mailbox-read-info">
+                            <h5>{{ conversation['sujet'] }}</h5>
+                            <h6>
+                                {% if conversation['id_sender'] == session['_id'] %}
+                                To:
+                                {% for row in users %}
+                                {% if row['_id'] | string == conversation['id_receiver'] %}
+                                {{ row['nom_prenom'] }}
+                                {% endif %}
+                                {% endfor %}
+                                {% else %}
+                                From:
+                                {% for row in users %}
+                                {% if row['_id'] | string == conversation['id_sender'] %}
+                                {{ row['nom_prenom'] }}
+                                {% endif %}
+                                {% endfor %}
+                                {% endif %}
+
+                                <span class="mailbox-read-time float-right">
+                                    {{ conversation['date_creation'] }}
+                                </span></h6>
+                        </div>
+                        <!-- /.mailbox-controls -->
+                        <div class="mailbox-read-message">
+                            <p>
+                                {{ conversation['message'] }}
+                            </p>
+                        </div>
+                        <div class="mailbox-read-message">
+                            <div class="row">
+                                <div class="col-10 ml-auto mr-auto">
+                                    {% for row in messages %}
+
+                                    {% if row['id_user'] == session['_id'] %}
+                                    <div class="direct-chat-msg right">
+                                        <div class="direct-chat-infos clearfix">
+                                            <span
+                                                class="direct-chat-name float-right">{{ session['nom_prenom'] }}</span>
+                                            <span
+                                                class="direct-chat-timestamp float-left">{{ row['date_creation'] }}</span>
+                                        </div>
+                                        <img class="direct-chat-img" src="/static/img/{{ session['profil_pic'] }}"
+                                            alt="message user image">
+                                        <div class="direct-chat-text">
+                                            {{ row['message'] }}
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    {% for user in users %}
+                                    {% if user['_id'] | string == row['id_user'] %}
+                                    <div class="direct-chat-infos clearfix">
+                                        <span class="direct-chat-name float-left"></span>
+                                        <span
+                                            class="direct-chat-timestamp float-right">{{ row['date_creation'] }}</span>
+                                    </div>
+                                    <img class="direct-chat-img" src="/static/img/" alt="message user image">
+                                    <div class="direct-chat-text">
+                                        {{ row['message'] }}
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.mailbox-read-message -->
+                    </div>
+                    <div class="card-footer">
+                        <form action="{{ url_for('admin_messages_repondre', id=conversation['_id']) }}" method="POST">
+                            <div class="form-group">
+                                <textarea class="form-control" name="message" placeholder="répondre au message..."
+                                    style="height: 150px"></textarea>
+                            </div>
+                            <div class="float-right">
+                                <button type="submit" class="btn btn-default"><i class="fas fa-reply"></i>
+                                    Répondre</button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- /.card-footer -->
+                </div>
+                <!-- /.card -->
+            </div>
+            <!-- /.col -->
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+{% endblock %}
