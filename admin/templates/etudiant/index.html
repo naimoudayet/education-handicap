@@ -185,10 +185,10 @@
 
 
     async function getProfesseurs(categories, horaires, langues) {
-
+        console.log();
         const prof = document.getElementById('prof');
 
-        const response = await fetch(`https://127.0.0.1:5000/api/professeurs/${categories}/${horaires}/${langues}`);
+        const response = await fetch(`https://${window.location.hostname}:5000/api/professeurs/${categories}/${horaires}/${langues}`);
         const data = await response.json();
 
         let content = '';
