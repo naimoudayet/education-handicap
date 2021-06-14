@@ -6,7 +6,6 @@
 
 {% block css %}
 <style>
-   
     #root:not(.withChat) {
         display: block;
         width: 100%;
@@ -57,7 +56,7 @@
         background-color: #007bff;
         color: white;
         height: 30px;
-        padding: 2px; 
+        padding: 2px;
     }
 
     .participantZoomed {
@@ -142,7 +141,7 @@
 <input value="Etudiant" type="hidden" id="role"></span>
 <div class="container">
     <div class="row">
-        <div class="col-md-9">
+        <div class="col-md-8">
             <div class="card card-primary card-outline">
 
                 <div class="card-body">
@@ -150,7 +149,8 @@
                         <div class="active tab-pane" id="a_propos">
 
                             <form>
-                                <input value="{{ session['_id'] }}" readonly type="hidden" name="”username”" id="username">
+                                <input value="{{ session['_id'] }}" readonly type="hidden" name="”username”"
+                                    id="username">
                                 <button id="join_leave" class="btn btn-success">Join call</button>
                                 <button id="share_screen" class="btn btn-dark" disabled>Share screen</button>
                                 <button id="toggle_chat" class="btn btn-dark" disabled>Toggle chat</button>
@@ -181,7 +181,17 @@
 
         {% for row in etudiants %}
         {% if cours['id_etudiant'] == row['_id'] | string %}
-        <div class="col-md-3">
+        <div class="col-md-4">
+
+            <!-- Profile Image -->
+            <div class="card card-primary card-outline">
+                <div class="card-body box-profile">
+
+                    <div id="output"></div>
+
+                </div>
+                <!-- /.card-body -->
+            </div>
 
             <!-- Profile Image -->
             <div class="card card-primary card-outline">
@@ -251,6 +261,53 @@
 <script src="https://media.twiliocdn.com/sdk/js/conversations/releases/1.0.0/twilio-conversations.min.js"></script>
 <script src="/static/twilio/main.js"></script>
 <script>
+    const output = document.getElementById('output');
+    try {
+        var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        var recognition = new SpeechRecognition();
 
+        recognition.continuous = true;
+
+        recognition.start();
+
+        words = [
+            'hello', 'hi'
+        ]
+        media = [
+            'https://media.giphy.com/media/Uv9HXI4iIOBolN9Thy/giphy.gif',
+            'https://media.giphy.com/media/3o7TKSmtRzKFHFg7F6/giphy.gif'
+        ]
+
+        // This block is called every time the Speech APi captures a line. 
+        recognition.onresult = function (event) {
+
+            // event is a SpeechRecognitionEvent object.
+            // It holds all the lines we have captured so far. 
+            // We only need the current one.
+            var current = event.resultIndex;
+
+            // Get a transcript of what was said.
+            var transcript = event.results[current][0].transcript;
+
+            output.innerHTML = '';
+
+            let w = transcript.toLowerCase();
+            words.forEach((word, index) => {
+
+                if (w.includes(word)) {
+
+                    output.innerHTML =
+                        `
+                    <img src='${media[index]}' width="300" height="250">
+                    `;
+                }
+
+            });
+
+        };
+
+    } catch (e) {
+        console.log('error');
+    }
 </script>
 {% endblock  %}
