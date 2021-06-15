@@ -1,3 +1,7 @@
+from langue import langues
+from timezone import timezones
+from technologie import technologies
+from functools import wraps
 from flask import Flask, render_template, request, flash, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson.objectid import ObjectId
@@ -20,11 +24,6 @@ twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
 twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
                        twilio_account_sid)
 
-from functools import wraps
-
-from technologie import technologies
-from timezone import timezones
-from langue import langues
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 target = os.path.join(APP_ROOT, r"static\img")
@@ -46,6 +45,7 @@ COLLECTION_MESSAGES = DB['messages']
 app = Flask(__name__)
 app.debug = True
 app.secret_key = 'MY_APP'
+
 
 def get_chatroom(name):
     for conversation in twilio_client.conversations.conversations.list():
@@ -324,7 +324,7 @@ def admin_messages_details(id):
     })
     messages = list(COLLECTION_MESSAGES.find({
         'id_conversation': id
-    })) 
+    }))
     users = list(COLLECTION_USERS.find())
     return render_template('/admin/messages/details.html', users=users, conversation=conversation, messages=messages)
 
@@ -421,6 +421,23 @@ def professeur_details(id):
     return redirect(url_for('index'))
 
 
+@app.route('/professeur/search/<string:keyword>')
+def professuer_search(keyword):
+    users = list(
+            COLLECTION_USERS.find({
+                'role': 'PROFESSEUR'
+            })
+        )
+    competences = list(
+            COLLECTION_COMPETENCES.find(),
+        )
+    a_propos = list(
+            COLLECTION_A_PROPOS.find()
+        )
+
+    return render_template('search.html', keyword=keyword, users=users, competences=competences, a_propos=a_propos)
+
+
 ######################################################################################
 # Partie                                                                             #
 ######################################################################################
@@ -429,37 +446,53 @@ def professeur_details(id):
 @app.route('/profil')
 @is_logged_in
 def profil_index():
-    a_propos = COLLECTION_A_PROPOS.find_one({
-        'id_utilisateur': session['_id']
-    })
-    competences = list(COLLECTION_COMPETENCES.find({
-        'id_utilisateur': session['_id']
-    }))
-    profil = COLLECTION_USERS.find_one({
-        '_id': ObjectId(session['_id'])
-    })
-    return render_template('/profil/index.html', profil=profil, a_propos=a_propos, competences=competences)
+    if session['role'] == 'ETUDIANT':
+        profil = COLLECTION_USERS.find_one({
+            '_id': ObjectId(session['_id'])
+        })
+        return render_template('/profil/index_etudiant.html', profil=profil)
+    elif session['role'] == 'PROFESSEUR':
+        a_propos = COLLECTION_A_PROPOS.find_one({
+            'id_utilisateur': session['_id']
+        })
+        competences = list(COLLECTION_COMPETENCES.find({
+            'id_utilisateur': session['_id']
+        }))
+        profil = COLLECTION_USERS.find_one({
+            '_id': ObjectId(session['_id'])
+        })
+        return render_template('/profil/index.html', profil=profil, a_propos=a_propos, competences=competences)
 
 
 @app.route('/profil/modifier')
 @is_logged_in
 def profil_modifier():
-    a_propos = COLLECTION_A_PROPOS.find_one({
-        'id_utilisateur': session['_id']
-    })
-    competences = list(COLLECTION_COMPETENCES.find({
-        'id_utilisateur': session['_id']
-    }))
-    profil = COLLECTION_USERS.find_one({
-        '_id': ObjectId(session['_id'])
-    })
-    return render_template('/profil/modifier.html',
-                           a_propos=a_propos,
-                           competences=competences,
-                           profil=profil,
-                           timezones=timezones,
-                           langues=langues
-                           )
+    if session['role'] == 'ETUDIANT':
+        profil = COLLECTION_USERS.find_one({
+            '_id': ObjectId(session['_id'])
+        })
+        return render_template('/profil/modifier_etudiant.html', 
+                            profil=profil,
+                            timezones=timezones,
+                            langues=langues
+                            )
+    elif session['role'] == 'PROFESSEUR':
+        a_propos = COLLECTION_A_PROPOS.find_one({
+            'id_utilisateur': session['_id']
+        })
+        competences = list(COLLECTION_COMPETENCES.find({
+            'id_utilisateur': session['_id']
+        }))
+        profil = COLLECTION_USERS.find_one({
+            '_id': ObjectId(session['_id'])
+        })
+        return render_template('/profil/modifier.html',
+                            a_propos=a_propos,
+                            competences=competences,
+                            profil=profil,
+                            timezones=timezones,
+                            langues=langues
+                            )
 
 
 @app.route('/profil/update', methods=['POST'])
@@ -905,8 +938,9 @@ def cours_details(id):
                 'id_utilisateur': id_professeur
             }))
             return render_template('/cours/details.html', cours=cours, etudiants=etudiants, competences=competences)
-    
+
     return redirect(url_for('cours'))
+
 
 @app.route('/cours_login', methods=['POST'])
 def cours_login():
@@ -947,6 +981,22 @@ def cours_ajouter():
         etudiant = request.form['etudiant']
         date = request.form['date']
         heure = request.form['heure']
+
+        today = datetime.now().strftime('%Y-%m-%d')
+        today_obj = datetime.strptime(today, '%Y-%m-%d')
+        date_time_obj = datetime.strptime(date, '%Y-%m-%d')
+
+        if module == '':
+            flash('svp, choisir un module', 'danger')
+            return render_template('/cours/ajouter.html', etudiants=etudiants, competences=competences)
+
+        if etudiant == '':
+            flash('svp, choisir un etudiant', 'danger')
+            return render_template('/cours/ajouter.html', etudiants=etudiants, competences=competences)
+
+        if today_obj > date_time_obj:
+            flash('vérifier la date de seance', 'danger')
+            return render_template('/cours/ajouter.html', etudiants=etudiants, competences=competences)
 
         result = COLLECTION_COURS.find_one({
             'id_etudiant': etudiant,
@@ -1092,22 +1142,57 @@ def etudiant_cours():
 @app.route('/etudiant/cours/details/<string:id>')
 def etudiant_cours_details(id):
     if ObjectId.is_valid(id):
- 
+
         cours = COLLECTION_COURS.find_one({
             '_id': ObjectId(id)
         })
 
         if cours:
             professeur = COLLECTION_USERS.find_one({
-                 '_id': ObjectId( cours['id_professeur'])
+                '_id': ObjectId(cours['id_professeur'])
             })
 
             competence = COLLECTION_COMPETENCES.find_one({
-                '_id': ObjectId( cours['id_competence'])
+                '_id': ObjectId(cours['id_competence'])
             })
             return render_template('/etudiant/cours/details.html', cours=cours, professeur=professeur, competence=competence)
-    
+
     return redirect(url_for('etudiant_cours'))
+
+
+@app.route('/cours/json')
+def cours_json():
+    id_professeur = session['_id']
+
+    cours = []
+
+    results = list(COLLECTION_COURS.find({
+        'id_professeur': id_professeur
+    }))
+
+    for result in results:
+        etudiant = COLLECTION_USERS.find_one({
+            'role': 'ETUDIANT',
+            '_id': ObjectId(result['id_etudiant'])
+        })
+        competence = COLLECTION_COMPETENCES.find_one({
+            '_id': ObjectId(result['id_competence'])
+        })
+        item = {
+            '_id': str(result['_id']),
+            'etudiant': {
+                'nom_prenom': etudiant['nom_prenom']
+            },
+            'competence': {
+                'technologie': competence['technologie']
+            },
+            'date': result['date'],
+            'heure': result['heure'],
+        }
+        cours.append(item)
+
+    return jsonify(cours)
+
 
 @app.errorhandler(404)
 def page_not_found(error):

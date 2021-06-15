@@ -100,9 +100,9 @@ function connect(username) {
 
 function updateParticipantCount() {
     if (!connected)
-        count.innerHTML = 'Disconnected.';
+        count.innerHTML = 'Déconnecter.';
     else
-        count.innerHTML = (room.participants.size + 1) + ' participants online.';
+        count.innerHTML = (room.participants.size + 1) + ' Connecter.';
 };
 
 function participantConnected(participant) {

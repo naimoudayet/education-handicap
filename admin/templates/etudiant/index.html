@@ -185,10 +185,11 @@
 
 
     async function getProfesseurs(categories, horaires, langues) {
-        console.log();
+
         const prof = document.getElementById('prof');
 
-        const response = await fetch(`https://${window.location.hostname}:5000/api/professeurs/${categories}/${horaires}/${langues}`);
+        const response = await fetch(
+            `https://${window.location.hostname}:5000/api/professeurs/${categories}/${horaires}/${langues}`);
         const data = await response.json();
 
         let content = '';
@@ -200,10 +201,11 @@
                 professeur.competences.forEach(competence => {
                     competencesElements +=
                         `
-                        <small class="badge badge-dark mr-1">${competence.technologie}</small>
-                        `;
+                    <small class="badge badge-dark mr-1">${competence.technologie}</small>
+                    `;
                 });
 
+                const bilbio = professeur.a_propos.biographie ? professeur.a_propos.biographie : '';
                 content +=
                     `
                     <div class="card">
@@ -231,7 +233,7 @@
                                             ${ professeur.fuseau_horaire }
                                         </span>
                                     </p>
-                                    <p class="mt-3">${ professeur.a_propos.biographie }</p>
+                                    <p class="mt-3">${ bilbio }</p>
                                     ${competencesElements}
                                 </div>
                                 <!-- /.post -->
