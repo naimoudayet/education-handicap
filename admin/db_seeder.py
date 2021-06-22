@@ -16,8 +16,6 @@ def get_random_string(length, letters):
     return result_str
 
 
-
-
 for i in range(20):
     nom_prenom = get_random_string(10, string.ascii_lowercase)
     data = {
@@ -28,7 +26,8 @@ for i in range(20):
         'fuseau_horaire': 'GMT+0',
         'langue': 'Français',
         'role': 'PROFESSEUR',
-        'date_inscription': datetime.now()
+        'date_inscription': datetime.now(),
+        'etat': 'ACTIVER'
     }
 
     COLLECTION_USERS.insert_one(data)
@@ -43,7 +42,23 @@ for i in range(20):
         'fuseau_horaire': 'GMT+0',
         'langue': 'Français',
         'role': 'ETUDIANT',
-        'date_inscription': datetime.now()
+        'date_inscription': datetime.now(),
+        'etat': 'ACTIVER'
     }
 
     COLLECTION_USERS.insert_one(data)
+
+
+data = {
+    'profil_pic': 'default_user.png',
+    'nom_prenom': 'admin admin',
+    'email': 'admin@gmail.com',
+    'mot_de_passe': generate_password_hash('adminadmin', 'pbkdf2:sha256', 10),
+    'fuseau_horaire': 'GMT+0',
+    'langue': 'Français',
+    'role': 'ADMIN',
+    'date_inscription': datetime.now(),
+    'etat': 'ACTIVER'
+}
+
+COLLECTION_USERS.insert_one(data)

@@ -156,14 +156,17 @@ def inscription():
 @is_logged_in
 def index():
     if session['role'] == 'ADMIN':
-
+        nbr_professeur = len(
+            list(COLLECTION_USERS.find({'role': 'PROFESSEUR'})))
+        nbr_etudiant = len(list(COLLECTION_USERS.find({'role': 'ETUDIANT'})))
         etudiants = list(COLLECTION_USERS.find(
             {'role': 'ETUDIANT'}).limit(3).sort("date_inscription", -1))
         professeurs = list(COLLECTION_USERS.find(
             {'role': 'PROFESSEUR'}).limit(3).sort("date_inscription", -1))
         cours = list(COLLECTION_COURS.find())
 
-        return render_template('admin/index.html', etudiants=etudiants, professeurs=professeurs, cours=cours)
+        return render_template('admin/index.html', nbr_professeur=nbr_professeur,
+                               nbr_etudiant=nbr_etudiant, etudiants=etudiants, professeurs=professeurs, cours=cours)
 
     if session['role'] == 'ETUDIANT':
 
@@ -222,14 +225,24 @@ def professeurs_recherche():
 @is_logged_in
 def professeurs_details(id):
     professeur = COLLECTION_USERS.find_one({'_id': ObjectId(id)})
+    etudiants = list(COLLECTION_USERS.find({'role': 'ETUDIANT'}))
     competences = list(COLLECTION_COMPETENCES.find({'id_utilisateur': id}))
     a_propos = COLLECTION_A_PROPOS.find_one({'id_utilisateur': id})
     avis = list(COLLECTION_AVIS.find({'id_professeur': id}))
+    note = 0
+    if avis:
+        for item in avis:
+            note += int(item['avis'])
 
-    print(competences)
+        note = note / len(avis)
+    cours = list(COLLECTION_COURS.find(
+        {'id_professeur': str(professeur['_id'])}).sort('date_creation', -1))
     return render_template('/admin/professeurs/details.html',
                            professeur=professeur,
+                           etudiants=etudiants,
                            avis=avis,
+                           cours=cours,
+                           note=note,
                            competences=competences,
                            a_propos=a_propos)
 
@@ -268,8 +281,20 @@ def etudiants_details(id):
     etudiant = COLLECTION_USERS.find_one({
         '_id': ObjectId(id)
     })
-
-    return render_template('/admin/etudiants/details.html', etudiant=etudiant)
+    professeurs = list(
+        COLLECTION_USERS.find({
+            'role': 'PROFESSEUR'
+        })
+    )
+    cours = list(COLLECTION_COURS.find(
+        {'id_etudiant': str(etudiant['_id'])}).sort('date_creation', -1))
+    competences = list(COLLECTION_COMPETENCES.find())
+    return render_template('/admin/etudiants/details.html',
+                           etudiant=etudiant,
+                           cours=cours,
+                           professeurs=professeurs,
+                           competences=competences
+                           )
 
 
 @app.route('/admin/cours')
@@ -296,6 +321,35 @@ def admin_cours_details(id):
     return redirect(url_for('cours_index'))
 
 
+@app.route('/admin/user/supprimer/<string:id>/<string:index>', methods=['GET', 'POST'])
+def user_desactiver_compte(id, index):
+    if ObjectId.is_valid(id):
+
+        route_url = 'professeurs_index'
+        if index == '2':
+            route_url = 'etudiants_index'
+
+        user = COLLECTION_USERS.find_one({
+            '_id': ObjectId(id)
+        })
+
+        if user:
+            COLLECTION_USERS.update_one(
+                {
+                    '_id': ObjectId(id)
+                }, {
+                    '$set': {
+                        'etat': 'DESACTIVER'
+                    }
+                })
+
+            flash('compte désactiver', 'success')
+            return redirect(url_for(route_url))
+
+    flash('compte invalide', 'warning')
+    return redirect(url_for(route_url))
+
+
 @app.route('/admin/messages')
 @is_logged_in
 def admin_messages_index():
@@ -319,13 +373,16 @@ def admin_messages_index():
 @app.route('/admin/messages/details/<string:id>')
 @is_logged_in
 def admin_messages_details(id):
+    id_user = session['_id']
     conversation = COLLECTION_CONVERSATION.find_one({
         '_id': ObjectId(id)
     })
     messages = list(COLLECTION_MESSAGES.find({
         'id_conversation': id
     }))
-    users = list(COLLECTION_USERS.find())
+    users = list(COLLECTION_USERS.find({
+        '_id': {'$ne': ObjectId(id_user)}
+    }))
     return render_template('/admin/messages/details.html', users=users, conversation=conversation, messages=messages)
 
 
@@ -372,8 +429,115 @@ def admin_messages_repondre(id):
 @app.route('/admin/profil')
 @is_logged_in
 def admin_profil():
-    return render_template('/admin/profil.html')
+    profil = COLLECTION_USERS.find_one({
+        '_id': ObjectId(session['_id'])
+    })
+    return render_template('/admin/profil.html', profil=profil, timezones=timezones,
+                           langues=langues)
 
+
+@app.route('/admin/profil/update', methods=['POST'])
+@is_logged_in
+def admin_profil_update():
+    if request.method == 'POST':
+        nom_prenom = request.form['nom_prenom']
+        email = request.form['email']
+        fuseau_horaire = request.form['fuseau_horaire']
+        langue = request.form['langue']
+
+        # upload image
+        for upload in request.files.getlist('profil_pic'):
+            # get file name
+            img = upload.filename
+            if img == '':
+                # modifier
+                result = COLLECTION_USERS.update_one({
+                    '_id': ObjectId(session['_id'])
+                }, {
+                    '$set': {
+                        'nom_prenom': nom_prenom,
+                        'email': email,
+                        'fuseau_horaire': fuseau_horaire,
+                        'langue': langue
+                    }
+                })
+                if result:
+                    flash('Profil modifier.', 'success')
+                    return redirect(url_for('admin_profil'))
+                else:
+                    flash(
+                        'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
+                    return redirect(url_for('admin_profil'))
+            else:
+                # get file extension
+                ext = img.split('.')[1].lower()
+                if ext in ['png', 'jpg', 'jpeg']:
+                    # save image in target
+                    destination = '/'.join([target, img])
+                    upload.save(destination)
+
+                    # modifier
+                    result = COLLECTION_USERS.update_one({
+                        '_id': ObjectId(session['_id'])
+                    }, {
+                        '$set': {
+                            'profil_pic': img,
+                            'nom_prenom': nom_prenom,
+                            'email': email,
+                            'fuseau_horaire': fuseau_horaire
+                        }
+                    })
+                    if result:
+                        flash('Profil modifier.', 'success')
+                        return redirect(url_for('admin_profil'))
+                    else:
+                        flash(
+                            'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
+                        return redirect(url_for('admin_profil'))
+                flash(
+                    'Seuls les fichiers {png, jpg, jpeg} sont autorisés...', 'danger')
+                return redirect(url_for('admin_profil'))
+
+    return render_template('/profil/modifier.html')
+
+
+@app.route('/admin/profil/update_password', methods=['POST'])
+@is_logged_in
+def admin_profil_update_password():
+    if request.method == 'POST':
+        mot_de_passe_actuel = request.form['mot_de_passe_actuel']
+        nouveau_pass = request.form['nouveau_pass']
+        confirmer_pass = request.form['confirmer_pass']
+
+        user = COLLECTION_USERS.find_one({
+            '_id': ObjectId(session['_id'])
+        })
+
+        if check_password_hash(user['mot_de_passe'], mot_de_passe_actuel):
+            if nouveau_pass == confirmer_pass:
+                # modifier
+                result = COLLECTION_USERS.update_one({
+                    '_id': ObjectId(session['_id'])
+                }, {
+                    '$set': {
+                        'mot_de_passe': generate_password_hash(nouveau_pass, 'pbkdf2:sha256', 10),
+                    }
+                })
+                if result:
+                    flash('Profil modifier.', 'success')
+                    return redirect(url_for('admin_profil'))
+                else:
+                    flash(
+                        'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
+                    return redirect(url_for('admin_profil'))
+            else:
+                flash('mot de passe non identiques.', 'danger')
+                return redirect(url_for('admin_profil'))
+        else:
+            flash('svp, vérifiez votre mot de passe.', 'danger')
+            return redirect(url_for('admin_profil'))
+
+    return redirect(url_for('admin_profil'))
 
 ######################################################################################
 # Partie Etudiant                                                                    #
@@ -424,16 +588,16 @@ def professeur_details(id):
 @app.route('/professeur/search/<string:keyword>')
 def professuer_search(keyword):
     users = list(
-            COLLECTION_USERS.find({
-                'role': 'PROFESSEUR'
-            })
-        )
+        COLLECTION_USERS.find({
+            'role': 'PROFESSEUR'
+        })
+    )
     competences = list(
-            COLLECTION_COMPETENCES.find(),
-        )
+        COLLECTION_COMPETENCES.find(),
+    )
     a_propos = list(
-            COLLECTION_A_PROPOS.find()
-        )
+        COLLECTION_A_PROPOS.find()
+    )
 
     return render_template('search.html', keyword=keyword, users=users, competences=competences, a_propos=a_propos)
 
@@ -471,11 +635,11 @@ def profil_modifier():
         profil = COLLECTION_USERS.find_one({
             '_id': ObjectId(session['_id'])
         })
-        return render_template('/profil/modifier_etudiant.html', 
-                            profil=profil,
-                            timezones=timezones,
-                            langues=langues
-                            )
+        return render_template('/profil/modifier_etudiant.html',
+                               profil=profil,
+                               timezones=timezones,
+                               langues=langues
+                               )
     elif session['role'] == 'PROFESSEUR':
         a_propos = COLLECTION_A_PROPOS.find_one({
             'id_utilisateur': session['_id']
@@ -487,12 +651,12 @@ def profil_modifier():
             '_id': ObjectId(session['_id'])
         })
         return render_template('/profil/modifier.html',
-                            a_propos=a_propos,
-                            competences=competences,
-                            profil=profil,
-                            timezones=timezones,
-                            langues=langues
-                            )
+                               a_propos=a_propos,
+                               competences=competences,
+                               profil=profil,
+                               timezones=timezones,
+                               langues=langues
+                               )
 
 
 @app.route('/profil/update', methods=['POST'])
@@ -526,7 +690,7 @@ def profil_update():
                 else:
                     flash(
                         'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
-                    return redirect(url_for('profil_modifier'))
+                    return redirect(url_for('profil_update'))
             else:
                 # get file extension
                 ext = img.split('.')[1].lower()
@@ -552,10 +716,10 @@ def profil_update():
                     else:
                         flash(
                             'vous ne pouvez pas vous modifier votre profil maintenant, réessayez plus tard.', 'danger')
-                        return redirect(url_for('profil_modifier'))
+                        return redirect(url_for('profil_update'))
                 flash(
                     'Seuls les fichiers {png, jpg, jpeg} sont autorisés...', 'danger')
-                return render_template('entreprise/create.html')
+                return redirect(url_for('profil_update'))
 
     return render_template('/profil/modifier.html')
 
@@ -980,11 +1144,19 @@ def cours_ajouter():
         module = request.form['module']
         etudiant = request.form['etudiant']
         date = request.form['date']
-        heure = request.form['heure']
+        heure_debut = request.form['heure_debut']
+        heure_fin = request.form['heure_fin']
 
-        today = datetime.now().strftime('%Y-%m-%d')
-        today_obj = datetime.strptime(today, '%Y-%m-%d')
-        date_time_obj = datetime.strptime(date, '%Y-%m-%d')
+        today = datetime.now().strftime('%Y-%m-%d %H:%M')
+        today_obj = datetime.strptime(today, '%Y-%m-%d %H:%M')
+
+        date_heure_debut = date + ' ' + heure_debut
+        date_heure_debut_obj = datetime.strptime(
+            date_heure_debut, '%Y-%m-%d %H:%M')
+
+        date_heure_fin = date + ' ' + heure_fin
+        date_heure_fin_obj = datetime.strptime(
+            date_heure_fin, '%Y-%m-%d %H:%M')
 
         if module == '':
             flash('svp, choisir un module', 'danger')
@@ -994,14 +1166,19 @@ def cours_ajouter():
             flash('svp, choisir un etudiant', 'danger')
             return render_template('/cours/ajouter.html', etudiants=etudiants, competences=competences)
 
-        if today_obj > date_time_obj:
+        if today_obj > date_heure_debut_obj:
+            flash('vérifier la date de seance', 'danger')
+            return render_template('/cours/ajouter.html', etudiants=etudiants, competences=competences)
+
+        if date_heure_fin_obj < date_heure_debut_obj:
             flash('vérifier la date de seance', 'danger')
             return render_template('/cours/ajouter.html', etudiants=etudiants, competences=competences)
 
         result = COLLECTION_COURS.find_one({
             'id_etudiant': etudiant,
             'date': date,
-            'heure': heure
+            'heure_debut': heure_debut,
+            'heure_fin': heure_fin
         })
 
         if result:
@@ -1013,7 +1190,8 @@ def cours_ajouter():
                 'id_etudiant': etudiant,
                 'id_competence': module,
                 'date': date,
-                'heure': heure,
+                'heure_debut': heure_debut,
+                'heure_fin': heure_fin,
                 'date_creation': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             })
 
@@ -1023,10 +1201,116 @@ def cours_ajouter():
     return render_template('/cours/ajouter.html', etudiants=etudiants, competences=competences)
 
 
+@app.route('/cours/modifier/<string:id>', methods=['GET', 'POST'])
+def cours_modifier(id):
+    if ObjectId.is_valid(id):
+        id_professeur = session['_id']
+
+        cours = COLLECTION_COURS.find_one({
+            '_id': ObjectId(id)
+        })
+
+        if cours:
+            etudiants = list(COLLECTION_USERS.find({
+                'role': 'ETUDIANT'
+            }))
+
+            competences = list(COLLECTION_COMPETENCES.find({
+                'id_utilisateur': id_professeur
+            }))
+
+            if request.method == 'POST':
+                module = request.form['module']
+                etudiant = request.form['etudiant']
+                date = request.form['date']
+                heure_debut = request.form['heure_debut']
+                heure_fin = request.form['heure_fin']
+
+                today = datetime.now().strftime('%Y-%m-%d %H:%M')
+                today_obj = datetime.strptime(today, '%Y-%m-%d %H:%M')
+
+                date_heure_debut = date + ' ' + heure_debut
+                date_heure_debut_obj = datetime.strptime(
+                    date_heure_debut, '%Y-%m-%d %H:%M')
+
+                date_heure_fin = date + ' ' + heure_fin
+                date_heure_fin_obj = datetime.strptime(
+                    date_heure_fin, '%Y-%m-%d %H:%M')
+
+                if module == '':
+                    flash('svp, choisir un module', 'danger')
+                    return render_template('/cours/modifier.html', cours=cours,
+                                           etudiants=etudiants, competences=competences)
+
+                if etudiant == '':
+                    flash('svp, choisir un etudiant', 'danger')
+                    return render_template('/cours/modifier.html', cours=cours,
+                                           etudiants=etudiants, competences=competences)
+
+                if today_obj > date_heure_debut_obj:
+                    flash('vérifier la date de seance', 'danger')
+                    return render_template('/cours/modifier.html', cours=cours,
+                                           etudiants=etudiants, competences=competences)
+
+                if date_heure_fin_obj < date_heure_debut_obj:
+                    flash('vérifier la date de seance', 'danger')
+                    return render_template('/cours/modifier.html', cours=cours,
+                                           etudiants=etudiants, competences=competences)
+
+                COLLECTION_COURS.update_one(
+                    {
+                        '_id': ObjectId(id)
+                    }, {
+                        '$set': {
+                            'id_professeur': id_professeur,
+                            'id_etudiant': etudiant,
+                            'id_competence': module,
+                            'date': date,
+                            'heure_debut': heure_debut,
+                            'heure_fin': heure_fin
+                        }
+                    })
+
+                flash('cours modifier', 'success')
+                return redirect(url_for('cours'))
+
+            return render_template('/cours/modifier.html', cours=cours,
+                                   etudiants=etudiants, competences=competences)
+
+    flash('cours invalide', 'warning')
+    return redirect(url_for('cours'))
+
+
+@app.route('/cours/supprimer/<string:id>', methods=['GET', 'POST'])
+def cours_supprimer(id):
+    if ObjectId.is_valid(id):
+        id_professeur = session['_id']
+
+        cours = COLLECTION_COURS.find_one({
+            '_id': ObjectId(id)
+        })
+
+        if cours:
+            COLLECTION_COURS.delete_one(
+                {
+                    '_id': ObjectId(id)
+                })
+
+            flash('cours supprimer', 'success')
+            return redirect(url_for('cours'))
+
+    flash('cours invalide', 'warning')
+    return redirect(url_for('cours'))
+
+
 @app.route('/messages')
 def messages_index():
     id_user = session['_id']
-
+    users = list(COLLECTION_USERS.find({
+        "_id": {
+            '$ne': ObjectId(id_user)
+        }
+    }))
     conversations = list(COLLECTION_CONVERSATION.find({
         '$or': [
             {
@@ -1040,14 +1324,8 @@ def messages_index():
 
     if session['role'] == 'ETUDIANT':
 
-        users = list(COLLECTION_USERS.find({
-            'role': 'PROFESSEUR'
-        }))
         apropos = list(COLLECTION_A_PROPOS.find())
     else:
-        users = list(COLLECTION_USERS.find({
-            'role': 'ETUDIANT'
-        }))
         apropos = []
     return render_template('/messages/index.html', conversations=conversations, users=users, apropos=apropos)
 
@@ -1055,6 +1333,11 @@ def messages_index():
 @app.route('/messages/<string:id>')
 def messages_details(id):
     id_user = session['_id']
+    users = list(COLLECTION_USERS.find({
+        "_id": {
+            '$ne': ObjectId(id_user)
+        }
+    }))
 
     conversation = COLLECTION_CONVERSATION.find_one({
         '$or': [
@@ -1077,16 +1360,6 @@ def messages_details(id):
         messages = list(COLLECTION_MESSAGES.find({
             'id_conversation': str(conversation['_id'])
         }))
-
-        if session['role'] == 'ETUDIANT':
-
-            users = list(COLLECTION_USERS.find({
-                'role': 'PROFESSEUR'
-            }))
-        else:
-            users = list(COLLECTION_USERS.find({
-                'role': 'ETUDIANT'
-            }))
 
         is_new = len(conversation)
     else:
@@ -1187,11 +1460,34 @@ def cours_json():
                 'technologie': competence['technologie']
             },
             'date': result['date'],
-            'heure': result['heure'],
+            'heure_debut': result['heure_debut'],
+            'heure_fin': result['heure_fin'],
         }
         cours.append(item)
 
     return jsonify(cours)
+
+
+@app.route('/contact', methods=['GET', 'POST'])
+def contacter_admin():
+    if request.method == 'POST':
+        id_user = session['_id']
+        admin = COLLECTION_USERS.find_one({
+            'role': 'ADMIN'
+        })
+        sujet = request.form['sujet']
+        message = request.form['message']
+
+        COLLECTION_CONVERSATION.insert_one({
+            'id_sender': id_user,
+            'id_receiver': str(admin['_id']),
+            'sujet': sujet,
+            'message': message,
+            'date_creation': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
+        flash('message envoyer', 'success')
+        return redirect(url_for('contacter_admin'))
+    return render_template('contact.html')
 
 
 @app.errorhandler(404)

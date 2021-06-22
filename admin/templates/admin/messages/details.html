@@ -42,14 +42,14 @@
                             <h5>{{ conversation['sujet'] }}</h5>
                             <h6>
                                 {% if conversation['id_sender'] == session['_id'] %}
-                                To:
+                                À:
                                 {% for row in users %}
                                 {% if row['_id'] | string == conversation['id_receiver'] %}
                                 {{ row['nom_prenom'] }}
                                 {% endif %}
                                 {% endfor %}
                                 {% else %}
-                                From:
+                                De:
                                 {% for row in users %}
                                 {% if row['_id'] | string == conversation['id_sender'] %}
                                 {{ row['nom_prenom'] }}
@@ -94,7 +94,7 @@
                                         <span
                                             class="direct-chat-timestamp float-right">{{ row['date_creation'] }}</span>
                                     </div>
-                                    <img class="direct-chat-img" src="/static/img/" alt="message user image">
+                                    <img class="direct-chat-img" src="/static/img/{{ user['profil_pic'] }}" alt="message user image">
                                     <div class="direct-chat-text">
                                         {{ row['message'] }}
                                     </div>

@@ -1,3 +1,186 @@
 {% extends "layout.html" %}
 
 {% block title %}Profil{% endblock %}
+
+{% block page_header %}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Profil</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/">Accueil</a></li>
+                    <li class="breadcrumb-item active">Profil</li>
+                </ol>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+{% endblock  %}
+
+{% block container %}
+<div class="row">
+    <div class="col-12">
+        {% include "_error_msg.html" %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <section class="content mt-5">
+            <div class="container-fluid">
+                <section class="content">
+                    <div class="row">
+                        <!-- /.col -->
+                        <div class="col-md-12">
+                            <div class="tab-content">
+
+                                <div class="active  tab-pane" id="infor_personnelles">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="card card-primary card-outline ">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">Modifier profil</h3>
+                                                    <!-- /.card-tools -->
+                                                </div>
+                                                <!-- /.card-header -->
+                                                <form action="{{ url_for('profil_update') }}" method="POST"
+                                                    enctype="multipart/form-data">
+                                                    <!-- /.card-header -->
+                                                    <div class="card-body p-0">
+                                                        <div class="row mt-5">
+                                                            <div class="col-1"></div>
+                                                            <div class="col-10">
+                                                                <div class="form-group">
+                                                                    <label for="nom_prenom">Nom et prénom</label>
+                                                                    <input type="text"
+                                                                        value="{{ profil['nom_prenom'] }}"
+                                                                        name="nom_prenom" class="form-control" required>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="email">Email</label>
+                                                                    <input type="email" value="{{ profil['email'] }}"
+                                                                        name="email" class="form-control" required>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="profil_pic">Photo de profil</label>
+                                                                    <input type="file" name="profil_pic"
+                                                                        class="form-control">
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="fuseau_horaire">Fuseau horaire</label>
+                                                                    <select name="fuseau_horaire" class="form-control">
+                                                                        <option value="">Choisr le fuseau d'horaire
+                                                                        </option>
+                                                                        {% for timezone in timezones %}
+                                                                        <option
+                                                                            {% if profil['fuseau_horaire'] == timezone %}
+                                                                            selected {% endif %} value="{{ timezone }}">
+                                                                            {{ timezone }}
+                                                                        </option>
+                                                                        {% endfor %}
+                                                                    </select>
+
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="langue">Langue</label>
+                                                                    <select name="langue" class="form-control">
+                                                                        <option value="">Choisr la langue
+                                                                        </option>
+                                                                        {% for langue in langues %}
+                                                                        <option {% if profil['langue'] == langue %}
+                                                                            selected {% endif %} value="{{ langue }}">
+                                                                            {{ langue }}
+                                                                        </option>
+                                                                        {% endfor %}
+                                                                    </select>
+
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-1"></div>
+                                                        </div>
+                                                        <!-- /.mail-box-messages -->
+                                                    </div>
+                                                    <!-- /.card-body -->
+                                                    <div class="card-footer p-0">
+                                                        <div class="row mt-2 mb-3">
+                                                            <div class="col-1"></div>
+                                                            <div class="col-10">
+                                                                <button type="submit"
+                                                                    class="btn btn-primary">Modifier</button>
+                                                            </div>
+                                                            <div class="col-1"></div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="card card-primary card-outline ">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">Modifier mot de passe</h3>
+
+                                                    <!-- /.card-tools -->
+                                                </div>
+                                                <!-- /.card-header -->
+                                                <form action="{{ url_for('profil_update_password') }}" method="POST">
+                                                    <!-- /.card-header -->
+                                                    <div class="card-body p-0">
+                                                        <div class="row mt-5">
+                                                            <div class="col-1"></div>
+                                                            <div class="col-10">
+                                                                <div class="form-group">
+                                                                    <label for="mot_de_passe_actuel">Mot de passe
+                                                                        actuel</label>
+                                                                    <input type="password" name="mot_de_passe_actuel"
+                                                                        class="form-control" required>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="nouveau_pass">Nouveau mot de
+                                                                        passe</label>
+                                                                    <input type="password" name="nouveau_pass"
+                                                                        class="form-control" required>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="confirmer_pass">Confirmer nouveau mot de
+                                                                        passe</label>
+                                                                    <input type="password" name="confirmer_pass"
+                                                                        class="form-control" required>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-1"></div>
+                                                        </div>
+                                                        <!-- /.mail-box-messages -->
+                                                    </div>
+                                                    <!-- /.card-body -->
+                                                    <div class="card-footer p-0">
+                                                        <div class="row mt-2 mb-3">
+                                                            <div class="col-1"></div>
+                                                            <div class="col-10">
+                                                                <button type="submit"
+                                                                    class="btn btn-primary">Modifier</button>
+                                                            </div>
+                                                            <div class="col-1"></div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                    <!-- /.row -->
+                </section>
+                <!-- /.content -->
+            </div>
+
+    </div><!-- /.container-fluid -->
+    </section>
+</div>
+
+{% endblock  %}

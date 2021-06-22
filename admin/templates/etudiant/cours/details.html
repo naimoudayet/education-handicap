@@ -148,19 +148,20 @@
 <input value="Etudiant" type="hidden" id="role"></span>
 <div class="container">
     <div class="row">
-        <div class="col-md-9">
+        <div class="col-md-8">
             <div class="card card-primary card-outline">
 
                 <div class="card-body">
                     <div class="tab-content">
                         <div class="active tab-pane" id="a_propos">
-                            <form> 
-                                <input value="{{ session['_id'] }}" readonly type="hidden" name="”username”" id="username">
-                                <button id="join_leave" class="btn btn-success">Join call</button>
-                                <button id="share_screen" class="btn btn-dark" disabled>Share screen</button>
-                                <button id="toggle_chat" class="btn btn-dark" disabled>Toggle chat</button>
-                            </form>
-                            <p id="count">Disconnected.</p>
+                            <form>
+                                <input value="{{ session['_id'] }}" readonly type="hidden" name="”username”"
+                                    id="username">
+                                <button id="join_leave" class="btn btn-success">Appeler</button>
+                                <button id="share_screen" class="btn btn-dark" disabled>Partager Ecran</button>
+                                <button id="toggle_chat" class="btn btn-dark" disabled>Chat</button>
+                            </form> 
+                            <p id="count">Déconnecter.</p>
                             <div id="root">
                                 <div id="container" class="container_video">
                                     <div id="local" class="participant">
@@ -184,8 +185,17 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
 
+            <!-- Profile Image -->
+            <div class="card card-primary card-outline">
+                <div class="card-body box-profile">
+
+                    <div id="output"></div>
+
+                </div>
+                <!-- /.card-body -->
+            </div>
             <!-- Profile Image -->
             <div class="card card-primary card-outline">
                 <div class="card-body box-profile">
@@ -215,14 +225,14 @@
                 <!-- /.card-header -->
                 <div class="card-body">
 
-                    <strong><i class="fas fa-calendar mr-3"></i> Heure: </strong>
-                    <p class="text-muted ml-3">
+                    <strong><i class="fas fa-calendar mr-3"></i> Date: </strong>
+                    <p class="text-muted ml-3" id="cours_date">
                         {{ cours['date'] }}
                     </p>
 
                     <strong><i class="fas fa-clock mr-3"></i> Heure: </strong>
-                    <p class="text-muted ml-3">
-                        {{ cours['heure'] }}
+                    <p class="text-muted ml-3" id="cours_heure">
+                        {{ cours['heure_debut'] }} - {{ cours['heure_fin'] }}
                     </p>
 
                     <strong><i class="fas fa-code mr-3"></i> Module: </strong>
@@ -249,6 +259,75 @@
 <script src="https://media.twiliocdn.com/sdk/js/conversations/releases/1.0.0/twilio-conversations.min.js"></script>
 <script src="/static/twilio/main.js"></script>
 <script>
+    const cours_date = document.getElementById('cours_date').innerText;
+    const cours_heure = document.getElementById('cours_heure').innerText;
+ 
 
+    const heure_debut = cours_heure.split(' - ')[0]
+    const heure_fin = cours_heure.split(' - ')[1];
+ 
+
+    var today = new Date();
+    var date_debut = new Date(`${cours_date} ${cours_heure}`);
+    var date_fin = new Date(`${cours_date} ${heure_fin}:00`);
+
+    const output = document.getElementById('output');
+
+    if (today.getDate() === date_debut.getDate()) {
+        if (today.getTime() >= date_debut.getTime() && today.getTime() <= date_fin.getTime()) {
+
+
+            try {
+                var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                var recognition = new SpeechRecognition();
+
+                recognition.continuous = true;
+
+                recognition.start();
+
+                words = [
+                    'hello', 'good'
+                ]
+                media = [
+                    'https://media.giphy.com/media/Uv9HXI4iIOBolN9Thy/giphy.gif',
+                    'https://media.giphy.com/media/3o7TKSmtRzKFHFg7F6/giphy.gif'
+                ]
+
+                // This block is called every time the Speech APi captures a line. 
+                recognition.onresult = function (event) {
+
+                    // event is a SpeechRecognitionEvent object.
+                    // It holds all the lines we have captured so far. 
+                    // We only need the current one.
+                    var current = event.resultIndex;
+
+                    // Get a transcript of what was said.
+                    var transcript = event.results[current][0].transcript;
+
+                    output.innerHTML = '';
+
+                    let w = transcript.toLowerCase();
+                    words.forEach((word, index) => {
+
+                        if (w.includes(word)) {
+
+                            output.innerHTML =
+                                `
+                        <img src='${media[index]}' width="300" height="250">
+                        `;
+                        }
+
+                    });
+
+                };
+
+            } catch (e) {
+                console.log('error');
+            }
+        }
+    } else {
+        document.getElementById('a_propos').innerText = '';
+        output.innerText = '';
+    }
 </script>
 {% endblock  %}

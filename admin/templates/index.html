@@ -51,10 +51,9 @@
         const events = [];
         json.forEach(cours => {
 
-            const h = parseInt(cours.heure.split(':')[0]);
 
-            const startHour = `${cours.date} ${cours.heure}`;
-            const endHour = `${cours.date} ${h+2}:00`;
+            const startHour = `${cours.date} ${cours.heure_debut}`;
+            const endHour = `${cours.date} ${cours.heure_fin}`;
 
             const index = Math.floor(Math.random() * colors.length);
             event = {

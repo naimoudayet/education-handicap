@@ -222,14 +222,14 @@
                 <!-- /.card-header -->
                 <div class="card-body">
 
-                    <strong><i class="fas fa-calendar mr-3"></i> Heure: </strong>
+                    <strong><i class="fas fa-calendar mr-3"></i> Date: </strong>
                     <p class="text-muted ml-3" id="cours_date">
                         {{ cours['date'] }}
                     </p>
 
                     <strong><i class="fas fa-clock mr-3"></i> Heure: </strong>
                     <p class="text-muted ml-3" id="cours_heure">
-                        {{ cours['heure'] }}
+                        {{ cours['heure_debut'] }} - {{ cours['heure_fin'] }}
                     </p>
 
                     <strong><i class="fas fa-code mr-3"></i> Module: </strong>
@@ -264,12 +264,13 @@
     const cours_date = document.getElementById('cours_date').innerText;
     const cours_heure = document.getElementById('cours_heure').innerText;
 
-    const heure_fin = parseInt(cours_heure.split(':')[0]) + 3;
+    const heure_debut = cours_heure.split(' - ')[0]
+    const heure_fin = cours_heure.split(' - ')[1];
 
     var today = new Date();
     var date_debut = new Date(`${cours_date} ${cours_heure}`);
-    var date_fin = new Date(`${cours_date} ${heure_fin}:00`);
- 
+    var date_fin = new Date(`${cours_date} ${heure_fin}`);
+
     const output = document.getElementById('output');
 
     if (today.getDate() === date_debut.getDate()) {

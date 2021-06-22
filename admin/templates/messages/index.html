@@ -22,7 +22,7 @@
                                     {% if user['_id'] | string == row['id_receiver'] or user['_id'] | string == row['id_sender'] %}
                                     <div class="col-7">
                                         <h2 class="lead"><b>
-                                                {{ user['nom_prenom'] }}
+                                                {{ user['nom_prenom'] }} 
 
                                             </b></h2>
                                         {% for item in apropos %}
@@ -51,10 +51,7 @@
                                     <a href="/messages/{{ row['id_sender'] }}" class="btn btn-sm bg-teal">
                                         <i class="fas fa-comments"></i> </a>
                                     {% endif %}
-
-                                    <a href="/professeur/{{ row['id_receiver'] }}" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-user"></i> Voir Profil
-                                    </a>
+ 
                                 </div>
                             </div>
                         </div>

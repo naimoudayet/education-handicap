@@ -45,8 +45,12 @@
                 <ul class="list-group list-group-unbordered mb-3">
 
                 </ul>
-
-                <a href="#" class="btn btn-danger btn-block"><b>Désactiver</b></a>
+                <form action="{{ url_for('user_desactiver_compte', id=etudiant['_id'], index=2) }}" method="post"
+                    onsubmit="return confirm('Désactiver Compte ?');">
+                    <button type="submit" class="btn btn-danger btn-block">
+                        Désactiver
+                    </button>
+                </form>
             </div>
             <!-- /.card-body -->
         </div>
@@ -103,21 +107,67 @@
                 <div class="tab-content">
                     <div class="active tab-pane" id="a_propos">
 
-                        <!-- Post -->
-                        <div class="post">
-                            <!-- /.user-block -->
-                            <div class="row mb-3">
-                                <strong> Lorem ipsum represents a long-held tradition for designers</strong>
+                        {% if cours %}
+                        {% for item in cours %}
+                        <div class="col-md-12">
+                            <!-- Widget: user widget style 2 -->
+                            <div class="card card-widget widget-user-2">
+                                <div class="widget-user-header bg-primary">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            {% for row in professeurs %}
 
-                                <p class="mt-2">
-                                    Lorem ipsum represents a long-held tradition for designers,
-                                    typographers and the like. Some people hate it and argue for
-                                    its demise, but others ignore the hate as they create awesome
-                                    tools to help create filler text for everyone from bacon lovers
-                                    to Charlie Sheen fans.
-                                </p>
+                                            {% if item['id_professeur'] == row['_id'] | string %}
+
+                                            <div class="widget-user-image">
+                                                <img class="img-circle elevation-2"
+                                                    src="/static/img/{{ row['profil_pic'] }}" alt="User Avatar">
+                                            </div>
+                                            <!-- /.widget-user-image -->
+                                            <h5 class="widget-user-username">{{ row['nom_prenom'] }}</h5>
+
+                                            {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card-footer p-0">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <div class="nav-link">
+                                                Module: <span class="float-right badge bg-primary">
+                                                    {% for row in competences %}
+                                                    {% if item['id_competence'] == row['_id'] | string %}
+                                                    {{ row['technologie'] }}
+                                                    {% endif %}
+                                                    {% endfor %}
+                                                </span>
+                                            </div>
+                                        </li>
+                                        <li class="nav-item">
+                                            <div class="nav-link">
+                                                Date: <span
+                                                    class="float-right badge bg-primary">{{ item['date'] }}</span>
+                                            </div>
+                                        </li>
+                                        <li class="nav-item">
+                                            <div class="nav-link">
+                                                Heure: <span
+                                                    class="float-right badge bg-primary">{{ item['heure'] }}</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
+                            <!-- /.widget-user -->
                         </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="col-md-4">
+                            <p class="text-danger">Aucun Cours.</p>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

@@ -11,7 +11,7 @@
         <div class="row mt-2">
             <div class="col-12">
                 <div class="card-footer clearfix  float-right">
-                    
+
                 </div>
             </div>
         </div>
@@ -42,7 +42,8 @@
                                             {% endfor %}
                                         </p>
                                         <p class="text-muted text-sm"><b>Date: </b> {{ row['date'] }}</p>
-                                        <p class="text-muted text-sm"><b>Heure: </b> {{ row['heure'] }}</p>
+                                        <p class="text-muted text-sm"><b>Heure: </b> {{ row['heure_debut'] }} -
+                                            {{ row['heure_fin'] }}</p>
                                     </div>
                                     <div class="col-5 text-center">
                                         <img src="/static/img/{{ professeur['profil_pic'] }}" alt="user-avatar"
@@ -56,10 +57,7 @@
                                 <div class="text-right">
                                     <a href="/etudiant/cours/details/{{ row['_id'] }}" class="btn btn-sm bg-teal">
                                         <i class="fas fa-comments"></i>
-                                    </a>
-                                    <a href="#" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-user"></i> View Profile
-                                    </a>
+                                    </a> 
                                 </div>
                             </div>
                         </div>

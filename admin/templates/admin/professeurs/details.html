@@ -44,14 +44,19 @@
 
                 <ul class="list-group list-group-unbordered mb-3">
                     <li class="list-group-item">
-                        <b>Séances</b> <a class="float-right">0</a>
+                        <b>Séances</b> <a class="float-right">{{ cours | length }}</a>
                     </li>
                     <li class="list-group-item">
-                        <b>Avis</b> <a class="float-right">0</a>
+                        <b>Avis</b> <a class="float-right">{{ note }}</a>
                     </li>
                 </ul>
 
-                <a href="#" class="btn btn-danger btn-block"><b>Désactiver</b></a>
+                <form action="{{ url_for('user_desactiver_compte', id=professeur['_id'], index=1) }}" method="post"
+                    onsubmit="return confirm('Désactiver Compte ?');">
+                    <button type="submit" class="btn btn-danger btn-block">
+                        Désactiver
+                    </button>
+                </form>
             </div>
             <!-- /.card-body -->
         </div>
@@ -261,7 +266,7 @@
                                     {% else %}
                                     <div class="comment-text">
                                         <span class="username">
-                                                aucun avis
+                                            aucun avis
                                         </span>
                                     </div>
                                     <!-- /.comment-text -->

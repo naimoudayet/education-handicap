@@ -50,7 +50,7 @@
                                             {% endfor %}
                                         </p>
                                         <p class="text-muted text-sm"><b>Date: </b> {{ row['date'] }}</p>
-                                        <p class="text-muted text-sm"><b>Heure: </b> {{ row['heure'] }}</p>
+                                        <p class="text-muted text-sm"><b>Heure: </b> {{ row['heure_debut'] }} - {{ row['heure_fin'] }}</p>
                                     </div>
                                     <div class="col-5 text-center">
                                         <img src="/static/img/{{ etudiant['profil_pic'] }}" alt="user-avatar"
@@ -65,8 +65,8 @@
                                     <a href="/cours/details/{{ row['_id'] }}" class="btn btn-sm bg-teal">
                                         <i class="fas fa-comments"></i>
                                     </a>
-                                    <a href="#" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-user"></i> View Profile
+                                    <a href="/cours/modifier/{{ row['_id'] }}" class="btn btn-sm btn-primary">
+                                         Modifier Cours
                                     </a>
                                 </div>
                             </div>
